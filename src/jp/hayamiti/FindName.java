@@ -1,24 +1,17 @@
 package jp.hayamiti;
 
-import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Base64;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.hayamiti.websocket.AudioListener;
-import jp.hayamiti.websocket.FindNameListener;
-import jp.hayamiti.websocket.MessageListener;
 import jp.hayamiti.websocket.MyWsClient;
-import jp.hayamiti.websocket.YesOrNoListener;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -48,12 +41,12 @@ public class FindName {
 			//マイク
 			CRecordMic mic = new CRecordMic();
 			//< Socket設定>
-	        MyWsClient.on(new MessageListener());
-	        MyWsClient.on(new AudioListener());
-	        MyWsClient.on(new FindNameListener());
-	        MyWsClient.on(new YesOrNoListener());
-	        client = new MyWsClient(new URI("ws://192.168.1.49:8000"));
-	        client.connect();
+//	        MyWsClient.on(new MessageListener());
+//	        MyWsClient.on(new AudioListener());
+//	        MyWsClient.on(new FindNameListener());
+//	        MyWsClient.on(new YesOrNoListener());
+//	        client = new MyWsClient(new URI("ws://192.168.1.49:8000"));
+//	        client.connect();
 	        //</ Socket設定>
 
 	        // <stateの取得>
@@ -87,9 +80,10 @@ public class FindName {
 							sotawish.StartIdling();
 						}
 						// 録音
-						recordForSpRec(mic);
+//						recordForSpRec(mic);
+				        SpeechRec.recordForSpRecByHttp(mic);
 						// モード更新
-						Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.WAIT);
+//						Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.WAIT);
 					}else if(mode == SotaState.Mode.WAIT) {
 						GamingLED.on(pose, mem, motion);
 						if(results.size() > 0) {
@@ -123,7 +117,7 @@ public class FindName {
 									sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
 								}
 								// 通信終了
-								client.disconnect();
+//								client.disconnect();
 								break;
 							}else if(recordResult.contains("おはよう") || recordResult.contains("こんにちは") || recordResult.contains("こんばんは")) {
 								// モード更新
@@ -149,7 +143,7 @@ public class FindName {
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			// 通信終了
-			client.disconnect();
+//			client.disconnect();
 		}
 	}
 
@@ -166,10 +160,11 @@ public class FindName {
 		ArrayList<JSONObject> results = ((FindNameState) Store.getState(Store.FIND_NAME_STATE)).getResults();
 		JSONArray listenResults = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getListenResults();
 		int count = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getCount();
+
 		if(mode == FindNameState.Mode.LISTENNING_NAME) {
-			// 名前を聞き取る
-			recordForFindName(mic, sotawish);
-			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_FIND_NAME);
+			// 送信処理に時間がかかるかもしれないから、新たにスレッドを作る
+			recordForFindNameByHttp(mic, sotawish);
+//			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_FIND_NAME);
 		}else if(mode == FindNameState.Mode.WAIT_FIND_NAME) {
 			// 待機 ユーザーの応答とサーバーからの応答を待つときにこの状態になる
 			// MyWsClientに登録したイベントリスナーがstateを書き換えることによってこの状態から抜け出せる
@@ -279,29 +274,53 @@ public class FindName {
 		}
 	}
 
-	private static void recordForSpRec(CRecordMic mic) {
-		try {
-			// <録音>
-			mic.startRecording(TEST_REC_PATH,3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
-			// <録音した音声をサーバーに送信できる形にエンコード>
-			File audioFile = new File(
-					TEST_REC_PATH);
-	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-	        String encoded = Base64.getEncoder().encodeToString(bytes);
-	        CRobotUtil.Log(TAG, "encoded record file");
-	        // </録音した音声をサーバーに送信できる形にエンコード>
-	        // 送信
-	        MyWsClient.emit(AudioListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
-		}catch(Exception e) {
-			CRobotUtil.Log(TAG, e.toString());
-		}
-	}
+//	private static void recordForSpRec(CRecordMic mic) {
+//		try {
+//			// <録音>
+//			mic.startRecording(TEST_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+//			// <録音した音声をサーバーに送信できる形にエンコード>
+//			File audioFile = new File(
+//					TEST_REC_PATH);
+//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
+//	        String encoded = Base64.getEncoder().encodeToString(bytes);
+//	        CRobotUtil.Log(TAG, "encoded record file");
+//	        // </録音した音声をサーバーに送信できる形にエンコード>
+//	        // 送信
+//	        MyWsClient.emit(AudioListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
+//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
+//		}catch(Exception e) {
+//			CRobotUtil.Log(TAG, e.toString());
+//		}
+//	}
 
-	private static void recordForFindName(CRecordMic mic, MotionAsSotaWish sotawish) {
+//	private static void recordForFindName(CRecordMic mic, MotionAsSotaWish sotawish) {
+//		try {
+//			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
+//
+//			// <録音>
+//			mic.startRecording(FIND_NAME_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+//			// <録音した音声をサーバーに送信できる形にエンコード>
+//			File audioFile = new File(
+//					FIND_NAME_REC_PATH);
+//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
+//	        String encoded = Base64.getEncoder().encodeToString(bytes);
+//	        CRobotUtil.Log(TAG, "encoded record file");
+//	        // </録音した音声をサーバーに送信できる形にエンコード>
+//	        // 送信
+//	        MyWsClient.emit(FindNameListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
+//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
+//		}catch(Exception e) {
+//			CRobotUtil.Log(TAG, e.toString());
+//		}
+//	}
+
+	private static void recordForFindNameByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
 		try {
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
 
@@ -310,18 +329,31 @@ public class FindName {
 			mic.waitend();
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
-			// <録音した音声をサーバーに送信できる形にエンコード>
-			File audioFile = new File(
-					FIND_NAME_REC_PATH);
-	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-	        String encoded = Base64.getEncoder().encodeToString(bytes);
-	        CRobotUtil.Log(TAG, "encoded record file");
-	        // </録音した音声をサーバーに送信できる形にエンコード>
-	        // 送信
-	        MyWsClient.emit(FindNameListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
+			//<名前認識>
+			String result = MyHttpCon.nameRec(FIND_NAME_REC_PATH , MyHttpCon.API_HOME + "/nameRec" + "?sendTime=" + System.currentTimeMillis());
+			CRobotUtil.Log(TAG, result);
+			JSONObject data = new JSONObject(result);
+			String nameKana = data.getString("result");
+			CRobotUtil.Log(TAG, nameKana);
+
+			//</名前認識>
+			//<データベースからユーザー情報を取得>
+			result = MyHttpCon.getUserNames(MyHttpCon.DB_HOME + "/getUserNames", nameKana);
+			CRobotUtil.Log(TAG, result);
+			JSONObject userNames = new JSONObject(result);
+			Boolean err = userNames.getBoolean("err");
+			if(err) {
+				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
+			}else {
+
+	    		// 追加する
+	        	Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.SET_LISTEN_RESULT, userNames.getJSONArray("users"));
+	            Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+			}
+			//</データベースからユーザー情報を取得>
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
+            Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
 		}
 	}
 

@@ -5,7 +5,9 @@ import java.net.URI;
 import java.util.Base64;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
+import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpeechRecState;
 import jp.hayamiti.state.Store;
@@ -70,10 +72,11 @@ public class SpeechRec {
 					// モード取得
 					mode = sotaState.getMode();
 					if(mode == SotaState.Mode.LISTENING) {
-						boolean isListened = speechRec(pose, mem, motion, sotawish, mic, 10);
-						if(isListened) {
-							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
-						}
+//						boolean isListened = speechRec(pose, mem, motion, sotawish, mic, 10);
+//						if(isListened) {
+//							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+//						}
+						recordForSpRecByHttp(mic);
 					}
 					else if(mode == SotaState.Mode.JUDDGING){
 						String recordResult = speechRecState.getResult();
@@ -187,6 +190,28 @@ public class SpeechRec {
 	        MyWsClient.emit(SpeechRecListener.CHANNEL, payload);
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
+		}
+	}
+
+	public static void recordForSpRecByHttp(CRecordMic mic) {
+		try {
+			// <録音>
+			mic.startRecording(TEST_REC_PATH,3000);
+			mic.waitend();
+			CRobotUtil.Log(TAG, "wait end");
+			// </録音>
+			String result = MyHttpCon.speechRec(TEST_REC_PATH, MyHttpCon.API_HOME + "/spRec" + "?sendTime=" + System.currentTimeMillis());
+			CRobotUtil.Log(TAG, result);
+			JSONObject data = new JSONObject(result);
+			MyLog.info(TAG,"get audio:" + data.getString("result"));
+            Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_SP_REC_RESULT, data.getString("result"));
+            Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+
+		}catch(Exception e) {
+			CRobotUtil.Log(TAG, e.toString());
+			Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_SP_REC_RESULT,"");
+            Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+
 		}
 	}
 }
