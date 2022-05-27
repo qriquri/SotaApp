@@ -330,7 +330,7 @@ public class FindName {
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
 			//<名前認識>
-			String result = MyHttpCon.nameRec(FIND_NAME_REC_PATH , MyHttpCon.API_HOME + "/nameRec" + "?sendTime=" + System.currentTimeMillis());
+			String result = MyHttpCon.nameRec(FIND_NAME_REC_PATH);
 			CRobotUtil.Log(TAG, result);
 			JSONObject data = new JSONObject(result);
 			String nameKana = data.getString("result");
@@ -338,7 +338,7 @@ public class FindName {
 
 			//</名前認識>
 			//<データベースからユーザー情報を取得>
-			result = MyHttpCon.getUserNames(MyHttpCon.DB_HOME + "/getUserNames", nameKana);
+			result = MyHttpCon.getUserNames(nameKana);
 			CRobotUtil.Log(TAG, result);
 			JSONObject userNames = new JSONObject(result);
 			Boolean err = userNames.getBoolean("err");

@@ -200,7 +200,7 @@ public class SpeechRec {
 			mic.waitend();
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
-			String result = MyHttpCon.speechRec(TEST_REC_PATH, MyHttpCon.API_HOME + "/spRec" + "?sendTime=" + System.currentTimeMillis());
+			String result = MyHttpCon.speechRec(TEST_REC_PATH);
 			CRobotUtil.Log(TAG, result);
 			JSONObject data = new JSONObject(result);
 			MyLog.info(TAG,"get audio:" + data.getString("result"));
