@@ -28,6 +28,10 @@ public class SotaState extends State{
 	    public static final String RECORDING = "recording";
 	    public static final String CAPTUREING = "captureing";
 	    public static final String FIND_NAME = "find_name";
+	    public static final String LISTEN_HABIT = "listen_habit";
+	    public static final String LISTEN_CONDITION = "listen_condition";
+	    public static final String ADVISE = "advise";
+	    public static final String FIN = "fin";
 
     }
     //</mode>

@@ -205,12 +205,11 @@ public class SpeechRec {
 			JSONObject data = new JSONObject(result);
 			MyLog.info(TAG,"get audio:" + data.getString("result"));
             Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_SP_REC_RESULT, data.getString("result"));
-            Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_SP_REC_RESULT,"");
-            Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+
 
 		}
 	}

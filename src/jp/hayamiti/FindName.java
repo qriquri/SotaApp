@@ -83,7 +83,7 @@ public class FindName {
 //						recordForSpRec(mic);
 				        SpeechRec.recordForSpRecByHttp(mic);
 						// モード更新
-//						Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.WAIT);
+				        Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 					}else if(mode == SotaState.Mode.WAIT) {
 						GamingLED.on(pose, mem, motion);
 						if(results.size() > 0) {
@@ -155,12 +155,12 @@ public class FindName {
 	 * @param sotawish
 	 * @param mic
 	 */
-	public static void findName(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	public static boolean findName(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 		String mode = ((FindNameState) Store.getState(Store.FIND_NAME_STATE)).getMode();
 		ArrayList<JSONObject> results = ((FindNameState) Store.getState(Store.FIND_NAME_STATE)).getResults();
 		JSONArray listenResults = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getListenResults();
 		int count = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getCount();
-
+		boolean isFind = false;
 		if(mode == FindNameState.Mode.LISTENNING_NAME) {
 			// 送信処理に時間がかかるかもしれないから、新たにスレッドを作る
 			recordForFindNameByHttp(mic, sotawish);
@@ -264,6 +264,7 @@ public class FindName {
 			// また呼ばれたときのために始めのモードに戻しておく
 			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
 			// </モード更新>
+			isFind = true;
 		}else if(mode == FindNameState.Mode.ERROR_NAME) {
 			// 名前を見つけられなかったとき
 			sotawish.Say("聞き取れなかったよ");
@@ -272,6 +273,7 @@ public class FindName {
 			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
 			// <モード更新>
 		}
+		return isFind;
 	}
 
 //	private static void recordForSpRec(CRecordMic mic) {
@@ -357,7 +359,7 @@ public class FindName {
 		}
 	}
 
-	private static String nameConnection(ArrayList<String> names) {
+	public static String nameConnection(ArrayList<String> names) {
 		String nameList = "";
 		for(int i =0; i < names.size(); i++) {
 			nameList += names.get(i).split(",")[0] + "さん,";
