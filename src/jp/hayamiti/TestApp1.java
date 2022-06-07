@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
+import jp.hayamiti.httpCon.LifeHabit;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
@@ -115,7 +116,10 @@ public class TestApp1 {
 						        String recordResult = sotaState.getSpRecResult();
 						        CRobotUtil.Log(TAG, "録音結果" + recordResult);
 						        // <結果を送信>
-						        res = MyHttpCon.postHabit(nickName, 4, 10, false, false, false, true, "ポテトチップス チョコレート");
+						        LifeHabit lifeHabit = new LifeHabit();
+						        lifeHabit.setVal(4, 10, false, false, false, true, "ポテトチップス チョコレート");
+						        lifeHabit.setText("4時に寝た", "10時に起きた", "運動してない", "飲んだ", "食べてない", "食べた", "ポテトチップスとチョコレート食べた");
+						        res = MyHttpCon.postHabit(nickName, lifeHabit);
 							 	data = new JSONObject(res);
 							 	success = data.getBoolean("success");
 							 	if(success) {

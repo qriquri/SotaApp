@@ -122,17 +122,24 @@ public class MyHttpCon {
         return response;
     }
 
-    public static String postHabit(String nickName, int sleep, int getUp, boolean exercise, boolean drinking, boolean eatBreakfast, boolean eatSnack, String snackName) throws IOException{
+    public static String postHabit(String nickName, LifeHabit lifeHabit) throws IOException{
     	String response = "{\"success\": false}";
     	String url = DB_HOME + "/postHabit";
     	String body = "{\"nickName\":\"" + nickName + "\""
-    					+",\"sleep\":" + sleep
-		    			+ ",\"getUp\":" + getUp
-		    			+ ",\"exercise\":" + exercise
-		    			+ ",\"drinking\":" + drinking
-		    			+ ",\"eatBreakfast\":" + eatBreakfast
-		    			+ ",\"eatSnack\":" + eatSnack
-		    			+ ",\"snackName\":\"" + snackName  + "\""
+    					+",\"sleep\":" + lifeHabit.getSleep()
+		    			+ ",\"getUp\":" + lifeHabit.getGetUp()
+		    			+ ",\"exercise\":" + lifeHabit.getExercise()
+		    			+ ",\"drinking\":" + lifeHabit.getDrinking()
+		    			+ ",\"eatBreakfast\":" + lifeHabit.getEatBreakfast()
+		    			+ ",\"eatSnack\":" + lifeHabit.getEatSnack()
+		    			+ ",\"snackName\":\"" + lifeHabit.getSnackName()  + "\""
+    					+ ",\"sleepT\":\"" + lifeHabit.getTextList()[0] + "\""
+		    			+ ",\"getUpT\":\"" + lifeHabit.getTextList()[1] + "\""
+		    			+ ",\"exerciseT\":\"" + lifeHabit.getTextList()[2] + "\""
+		    			+ ",\"drinkingT\":\"" + lifeHabit.getTextList()[3]+ "\""
+		    			+ ",\"eatBreakfastT\":\"" + lifeHabit.getTextList()[4] + "\""
+		    			+ ",\"eatSnackT\":\"" + lifeHabit.getTextList()[5] + "\""
+		    			+ ",\"snackNameT\":\"" + lifeHabit.getTextList()[6] + "\""
 		    			+ "}";
     	try {
     		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
@@ -146,6 +153,13 @@ public class MyHttpCon {
     	return response;
     }
 
+    /**
+     * JSON形式で送信したいときに使う
+     * @param body
+     * @param url
+     * @return
+     * @throws IOException
+     */
     public static String sendJSON(String body, String url) throws IOException {
         String response = "{\"success\": false}";
         HttpURLConnection con = null;
