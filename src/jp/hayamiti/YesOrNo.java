@@ -80,13 +80,15 @@ public class YesOrNo {
 			String result = MyHttpCon.yesOrNo(YES_OR_NO_REC_PATH);
 			JSONObject data = new JSONObject(result);
 			CRobotUtil.Log(TAG, result);
-			Boolean isYes =data.getBoolean("result");
-			if(isYes) {
+			String isYes =data.getString("result");
+			if(isYes.equals("yes")) {
         		Store.dispatch(Store.YES_OR_NO_STATE, YesOrNoState.Action.SET_ISYES, true);
         		Store.dispatch(Store.YES_OR_NO_STATE, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENED_YES_OR_NO);
-        	}else{
+        	}else if (isYes.equals("no")){
         		Store.dispatch(Store.YES_OR_NO_STATE, YesOrNoState.Action.SET_ISYES, false);
         		Store.dispatch(Store.YES_OR_NO_STATE, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENED_YES_OR_NO);
+        	}else {
+        		Store.dispatch(Store.YES_OR_NO_STATE, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.ERROR);
         	}
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());

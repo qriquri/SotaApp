@@ -21,8 +21,8 @@ public class MyHttpCon {
 //	private static final String EOL = System.getProperty("line.separator");
 	private static final String EOL = "\r\n"; // <= サーバーのosの改行コードに合わせる
     private static final String LOG_TAG = "MyHttpCon";
-    public static final String API_HOME = "http://192.168.1.40:80"; // これ変わるから注意
-    public static final String DB_HOME = "http://192.168.1.40:8000";// これ変わるから注意
+    public static final String API_HOME = "http://192.168.1.44:80"; // これ変わるから注意
+    public static final String DB_HOME = "http://192.168.1.44:8000";// これ変わるから注意
 
 
     /**
