@@ -1,15 +1,17 @@
-//package jp.hayamiti;
+package jp.hayamiti;
 //
 //import java.io.IOException;
 //
 //import org.json.JSONObject;
 //
 //import jp.hayamiti.httpCon.MyHttpCon;
-//import jp.hayamiti.utils.MyLog;
+import jp.hayamiti.utils.MyLog;
 //
-//public class SendHabit {
-//	public static final String LOG_TAG = "sendHabit";
-//	public static void main(String args[]) throws IOException {
+public class SendHabit {
+	public static final String LOG_TAG = "sendHabit";
+	public static void main(String args[]) {
+		MyLog.info(LOG_TAG, "hello world");
+	}}
 ////		MyHttpCon.getTodayHabit("シンゲン", false);
 //		MyHttpCon.postHabit("タロウ", 20, 10, false, false, false, true, "ポテトチップス");
 //		try {
