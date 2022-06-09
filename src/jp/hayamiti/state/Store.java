@@ -10,10 +10,12 @@ public class Store {
     public static final String FIND_NAME_STATE = "find-name-state";
     public static final String YES_OR_NO_STATE = "yes-or-no-state";
     public static final String SPEECH_REC_STATE = "speech_rec_state";
+    public static final String HABIT_QS_STATE = "habit-qs-state";
     private static final State sotaState = new SotaState();
     private static final State findNameState = new FindNameState();
     private static final State yesOrNoState = new YesOrNoState();
     private static final State speechRecState = new SpeechRecState();
+    private static final State habitQsState = new HabitQsState();
     /**
      * ステートの取得 キャスト推奨
      * @param stateName 欲しいステートの名前
@@ -29,6 +31,8 @@ public class Store {
             	return yesOrNoState;
             case SPEECH_REC_STATE:
             	return speechRecState;
+            case HABIT_QS_STATE:
+            	return habitQsState;
             default:
 
                 break;
@@ -56,6 +60,9 @@ public class Store {
             	break;
             case SPEECH_REC_STATE:
             	speechRecState.change(action, val);
+            	break;
+            case HABIT_QS_STATE:
+            	habitQsState.change(action, val);
             	break;
             default:
                 break;

@@ -106,6 +106,19 @@ public class MyHttpCon {
         return response;
     }
 
+    /**
+     * yesNo判定
+     * @param filename
+     * @return
+     * @throws IOException
+     */
+    public static String habitQs(String filename, String type) throws IOException {
+    	String response = "{\"success\": false}";
+        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type;
+        response = uploadFile(filename, url);
+        return response;
+    }
+
     public static String getUserNames(String nameKana) throws IOException {
     	String response = "{\"success\": false}";
         String encodeName = URLEncoder.encode(nameKana,"UTF-8");
