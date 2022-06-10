@@ -69,15 +69,17 @@ public class HabitQs {
 		int qsNum = state.getQsNum();
 		ArrayList<JSONObject> result = state.getResult();
 			if(mode == HabitQsState.Mode.LISTEN_ANS) {
+				// <質問をしてこたえを聞き取る>
 				recordForHabitQsByHttp(mic, sotawish, qsNum);
-			}else if(mode == HabitQsState.Mode.WAIT_SERVER_RES) {
-
+				// </質問をしてこたえを聞き取る>
 			}else if(mode == HabitQsState.Mode.CONFORM_ANS) {
+				// <答えを確認>
 				sotawish.Say(result.get(qsNum).getString("result") + "、であってる?");
 				// モード更新
-				Store.dispatch(Store.FIND_NAME_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
+				Store.dispatch(Store.HABIT_QS_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
+				// </答えを確認>
 			}else if(mode == HabitQsState.Mode.WAIT_CONFORM_ANS) {
-				// 確認待機
+				// <確認待機>
 				String yesOrNoMode = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getMode();
 				if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
 					boolean isYes = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getIsYes();
@@ -89,6 +91,8 @@ public class HabitQs {
 							String isEat = result.get(qsNum).getString("result");
 							if(!isEat.equals("yes")) {
 								qsNum+= 2;
+							}else {
+								qsNum++;
 							}
 						}else if (qsNum == HabitQsState.GETUP) {
 							// 終了
@@ -106,20 +110,22 @@ public class HabitQs {
 				}else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
 					// 確認しなおす
 					// モード更新
-					Store.dispatch(Store.FIND_NAME_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+					Store.dispatch(Store.HABIT_QS_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
 				}
 				// yesOrNo処理
 				YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+				// </確認待機>
 			}
 
 		return isFinish;
 	}
 
 	private static void recordForHabitQsByHttp(CRecordMic mic, MotionAsSotaWish sotawish, int qsNum) {
+		String type = "";
+		String action = "";
+		String question = "";
 		try {
-			String type = "";
-			String action = "";
-			String question = "";
+			// <今聞こうとしている質問に合わせた値を代入する>
 			switch (qsNum){
 			case HabitQsState.IS_EXERCISE:
 				type = "exercise";
@@ -148,7 +154,7 @@ public class HabitQs {
 				break;
 			case HabitQsState.SLEEP:
 				type = "sleep";
-				question = "昨日何時に寝た？例えば午後8時に寝たなら20時に寝た、と答えてね。";
+				question = "昨日何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。";
 				action = HabitQsState.Action.SET_SLEEP_LISTEN_RESULT;
 				break;
 			case HabitQsState.GETUP:
@@ -157,7 +163,9 @@ public class HabitQs {
 				action = HabitQsState.Action.SET_GETUP_LISTEN_RESULT;
 				break;
 			}
+			// </今聞こうとしている質問に合わせた値を代入する>
 
+			// 質問する
 			sotawish.SayFile(TextToSpeechSota.getTTSFile(question),MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			// <録音>
@@ -166,6 +174,7 @@ public class HabitQs {
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
 
+			// apiサーバーに送信して、解析してもらう
 			String result = MyHttpCon.habitQs(REC_PATH, type);
 			CRobotUtil.Log(TAG, result);
 			JSONObject data = new JSONObject(result);
@@ -176,7 +185,7 @@ public class HabitQs {
 				sotawish.Say("エラーが起きたからもう一度聞くね");
 				Store.dispatch(Store.HABIT_QS_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 			}else {
-	    		// 追加する
+	    		// 答えがあってるか確認する
 	        	Store.dispatch(Store.HABIT_QS_STATE, action, data);
 	        	Store.dispatch(Store.HABIT_QS_STATE, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
 

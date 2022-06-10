@@ -21,17 +21,16 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 public class TestApp2 {
 	static final String TAG = "TestApp2";
 	public static void main(String[] args) {
+		CRobotPose pose = null;
+		//VSMDと通信ソケット・メモリアクセス用クラス
+		CRobotMem mem = new CRobotMem();
+		//Sota用モーション制御クラス
+		CSotaMotion motion = new CSotaMotion(mem);
+		//sotawish初期化
+		MotionAsSotaWish sotawish = new MotionAsSotaWish(motion);
+		//マイク
+		CRecordMic mic = new CRecordMic();
 		try {
-			CRobotPose pose = null;
-			//VSMDと通信ソケット・メモリアクセス用クラス
-			CRobotMem mem = new CRobotMem();
-			//Sota用モーション制御クラス
-			CSotaMotion motion = new CSotaMotion(mem);
-			//sotawish初期化
-			MotionAsSotaWish sotawish = new MotionAsSotaWish(motion);
-
-			//マイク
-			CRecordMic mic = new CRecordMic();
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(Store.SOTA_STATE);
@@ -48,16 +47,22 @@ public class TestApp2 {
 				MotionSample.defaultPose(pose, mem, motion);
 				// sotaのモードをlisteningに変化
 				Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+				// sotaに待機モーションをさせる
+				sotawish.StartIdling();
 				while(true){
 					// モード取得
 					mode = sotaState.getMode();
 					if(mode == SotaState.Mode.LISTENING) {
+						// <話しかけられるのを待つ>
+						// sotaに待機モーションをさせる
 						sotawish.StartIdling();
 						// 録音
 				        SpeechRec.recordForSpRecByHttp(mic);
 						// モード更新
 				        Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+				        // <話しかけられるのを待つ>
 					}else if(mode == SotaState.Mode.JUDDGING){
+						// <LISTENINGモードで聞き取った音声の判定>
 						String recordResult = sotaState.getSpRecResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
@@ -90,14 +95,16 @@ public class TestApp2 {
 							}
 							// </聞き取った内容に応じて処理する>
 						}
+						// </LISTENINGモードで聞き取った音声の判定>
 					}else if(mode == SotaState.Mode.FIND_NAME) {
-						// 名前聞き取り
+						// <名前聞き取り>
 						boolean isFind = FindName.findName(pose, mem, motion, sotawish, mic);
 						if(isFind) {
-							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
+							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.CONFORM_ALEADY_LISTENED);
 						}
-					}else if(mode == SotaState.Mode.LISTEN_HABIT) {
-						// 生活習慣を聞き出す
+						// </名前聞き取り>
+					}else if(mode == SotaState.Mode.CONFORM_ALEADY_LISTENED) {
+						// <すでに質問済みかを確認する>
 						String nickName = results.get(results.size()-1).getString("nickName");
 						if(nickName.equals("")) {
 							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
@@ -110,48 +117,53 @@ public class TestApp2 {
 								sotawish.Say("今日はもう聞いたみたいだから、終了するよ");
 								Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 							}else {
-//								sotawish.Say("今日はまだ聞いてないみたいだから、質問するよ");
-//								sotawish.Say("何か話して");
-								// 録音
-//						        SpeechRec.recordForSpRecByHttp(mic);
-//						        String recordResult = sotaState.getSpRecResult();
-//						        CRobotUtil.Log(TAG, "録音結果" + recordResult);
-						        if( HabitQs.habitQs(pose, mem, motion, sotawish, mic)) {
-								// <結果を送信>
-						        	HabitQsState state = (HabitQsState) Store.getState(Store.HABIT_QS_STATE);
-						    		ArrayList<JSONObject> result = state.getResult();
-						        	LifeHabit lifeHabit = new LifeHabit();
-							        int sleepTime = Integer.parseInt(result.get(HabitQsState.SLEEP).getString("result"));
-							        int getUpTime = Integer.parseInt(result.get(HabitQsState.GETUP).getString("result"));
-							        lifeHabit.setVal(
-							        		sleepTime,
-							        		getUpTime,
-							        		result.get(HabitQsState.IS_EXERCISE).getString("result").equals("yes"),
-							        		result.get(HabitQsState.IS_DRINKING).getString("result").equals("yes"),
-							        		result.get(HabitQsState.EAT_BREAKFAST).getString("result").equals("yes"),
-							        		result.get(HabitQsState.EAT_SNACK).getString("result").equals("yes"),
-							        		result.get(HabitQsState.SNACK_NAME).getString("result"));
-	//						        lifeHabit.setText("4時に寝た", "10時に起きた", "運動してない", "飲んだ", "食べてない", "食べた", "ポテトチップスとチョコレート食べた");
-							        lifeHabit.setText(
-							        		result.get(HabitQsState.SLEEP).getString("text"),
-							        		result.get(HabitQsState.GETUP).getString("text"),
-							        		result.get(HabitQsState.IS_EXERCISE).getString("text"),
-							        		result.get(HabitQsState.IS_DRINKING).getString("text"),
-							        		result.get(HabitQsState.EAT_BREAKFAST).getString("text"),
-							        		result.get(HabitQsState.EAT_SNACK).getString("text"),
-							        		result.get(HabitQsState.SNACK_NAME).getString("text"));
-							        res = MyHttpCon.postHabit(nickName, lifeHabit);
-								 	data = new JSONObject(res);
-								 	success = data.getBoolean("success");
-								 	if(success) {
-								 		MyLog.info(TAG, "success");
-								 	}
-								 // </結果を送信>
-								 	// モード更新
-									Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_CONDITION);
-						        }
+								// まだ質問してない場合、質問する
+								sotawish.Say("今日はまだ聞いてないみたいだから、いくつか質問するよ");
+								// 質問結果をリセット
+								Store.dispatch(Store.HABIT_QS_STATE, HabitQsState.Action.RESET_RESULT, null);
+								Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
 							}
 						}
+						// </すでに質問済みかを確認する>
+					}else if(mode == SotaState.Mode.LISTEN_HABIT) {
+						// <生活習慣を聞き出す>
+						String nickName = results.get(results.size()-1).getString("nickName");
+						if( HabitQs.habitQs(pose, mem, motion, sotawish, mic)) {
+				        // 質問が終わったら
+						// <結果を送信>
+				        	HabitQsState state = (HabitQsState) Store.getState(Store.HABIT_QS_STATE);
+				    		ArrayList<JSONObject> result = state.getResult();
+				        	LifeHabit lifeHabit = new LifeHabit();
+					        int sleepTime = Integer.parseInt(result.get(HabitQsState.SLEEP).getString("result"));
+					        int getUpTime = Integer.parseInt(result.get(HabitQsState.GETUP).getString("result"));
+					        lifeHabit.setVal(
+					        		sleepTime,
+					        		getUpTime,
+					        		result.get(HabitQsState.IS_EXERCISE).getString("result").equals("yes"),
+					        		result.get(HabitQsState.IS_DRINKING).getString("result").equals("yes"),
+					        		result.get(HabitQsState.EAT_BREAKFAST).getString("result").equals("yes"),
+					        		result.get(HabitQsState.EAT_SNACK).getString("result").equals("yes"),
+					        		result.get(HabitQsState.SNACK_NAME).getString("result"));
+//						        lifeHabit.setText("4時に寝た", "10時に起きた", "運動してない", "飲んだ", "食べてない", "食べた", "ポテトチップスとチョコレート食べた");
+					        lifeHabit.setText(
+					        		result.get(HabitQsState.SLEEP).getString("text"),
+					        		result.get(HabitQsState.GETUP).getString("text"),
+					        		result.get(HabitQsState.IS_EXERCISE).getString("text"),
+					        		result.get(HabitQsState.IS_DRINKING).getString("text"),
+					        		result.get(HabitQsState.EAT_BREAKFAST).getString("text"),
+					        		result.get(HabitQsState.EAT_SNACK).getString("text"),
+					        		result.get(HabitQsState.SNACK_NAME).getString("text"));
+					        String res = MyHttpCon.postHabit(nickName, lifeHabit);
+						 	JSONObject data = new JSONObject(res);
+						    boolean	success = data.getBoolean("success");
+						 	if(success) {
+						 		MyLog.info(TAG, "success");
+						 	}
+						 // </結果を送信>
+						 	// モード更新
+							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_CONDITION);
+				        }
+						// </生活習慣を聞き出す>
 					}else if(mode == SotaState.Mode.LISTEN_CONDITION) {
 						// 体調を聞き出す
 						sotawish.Say("今日の体調はどんな感じ?");
@@ -173,15 +185,12 @@ public class TestApp2 {
 				// 箱に直しやすいポーズにする
 				MotionSample.stragePose(pose, mem, motion);
 				// LED発光
-				CRobotUtil.Log(TAG, "LED");
-				while(true) {
-					GamingLED.on(pose, mem, motion);
-				}
 		}
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
-			// 通信終了
-//			client.disconnect();
+		}finally {
+			 //サーボモータのトルクオフ
+			  motion.ServoOff();
 		}
 	}
 }

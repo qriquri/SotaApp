@@ -11,7 +11,6 @@ import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.hayamiti.websocket.MyWsClient;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -26,7 +25,7 @@ public class FindName {
 	static final String FIND_NAME_REC_PATH = "./find_name.wav";
 	public static void main(String[] args) {
         // サーバーと通信する用のソケット
-		MyWsClient client = null;
+//		MyWsClient client = null;
 		try {
 			CRobotPose pose = null;
 			//VSMDと通信ソケット・メモリアクセス用クラス
@@ -260,7 +259,7 @@ public class FindName {
 				sotawish.Say(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.");
 			}
 			// <モード更新>
-			Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+//			Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 			// また呼ばれたときのために始めのモードに戻しておく
 			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
 			// </モード更新>
