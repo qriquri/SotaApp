@@ -21,8 +21,8 @@ public class MyHttpCon {
 //	private static final String EOL = System.getProperty("line.separator");
 	private static final String EOL = "\r\n"; // <= サーバーのosの改行コードに合わせる
     private static final String LOG_TAG = "MyHttpCon";
-    public static final String API_HOME = "http://192.168.1.44:80"; // これ変わるから注意
-    public static final String DB_HOME = "http://192.168.1.44:8000";// これ変わるから注意
+    public static final String API_HOME = "http://192.168.1.41:80"; // これ変わるから注意
+    public static final String DB_HOME = "http://192.168.1.41:8000";// これ変わるから注意
 
 
     /**
@@ -107,14 +107,28 @@ public class MyHttpCon {
     }
 
     /**
-     * yesNo判定
+     * 生活習慣に関する質問の回答を解析
      * @param filename
+     * @param type
      * @return
      * @throws IOException
      */
     public static String habitQs(String filename, String type) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type;
+        response = uploadFile(filename, url);
+        return response;
+    }
+
+    /**
+     * 体調の回答を解析
+     * @param filename
+     * @return
+     * @throws IOException
+     */
+    public static String conditionQs(String filename) throws IOException {
+    	String response = "{\"success\": false}";
+        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis();
         response = uploadFile(filename, url);
         return response;
     }
@@ -160,6 +174,25 @@ public class MyHttpCon {
     	}catch(Exception e) {
     		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
     		MyLog.error(LOG_TAG, "postHabit err " + body);
+    	}finally {
+
+    	}
+    	return response;
+    }
+
+    public static String postCondition(String nickName, String condition, String sentence) throws IOException{
+    	String response = "{\"success\": false}";
+    	String url = DB_HOME + "/postCondition";
+    	String body = "{\"nickName\":\"" + nickName + "\""
+    					+ ",\"condition\":\"" + condition  + "\""
+    					+ ",\"sentence\":\"" + sentence + "\""
+		    			+ "}";
+    	try {
+    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
+    		response = sendJSON(body, url);
+    	}catch(Exception e) {
+    		MyLog.error(LOG_TAG, "postCondition err " + e.toString());
+    		MyLog.error(LOG_TAG, "postConditiont err " + body);
     	}finally {
 
     	}

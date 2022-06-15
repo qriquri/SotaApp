@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-import jp.hayamiti.httpCon.LifeHabit;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
@@ -127,47 +126,18 @@ public class TestApp2 {
 						// </すでに質問済みかを確認する>
 					}else if(mode == SotaState.Mode.LISTEN_HABIT) {
 						// <生活習慣を聞き出す>
-						String nickName = results.get(results.size()-1).getString("nickName");
+//						String nickName = results.get(results.size()-1).getString("nickName");
 						if( HabitQs.habitQs(pose, mem, motion, sotawish, mic)) {
-				        // 質問が終わったら
-						// <結果を送信>
-				        	HabitQsState state = (HabitQsState) Store.getState(Store.HABIT_QS_STATE);
-				    		ArrayList<JSONObject> result = state.getResult();
-				        	LifeHabit lifeHabit = new LifeHabit();
-					        int sleepTime = Integer.parseInt(result.get(HabitQsState.SLEEP).getString("result"));
-					        int getUpTime = Integer.parseInt(result.get(HabitQsState.GETUP).getString("result"));
-					        lifeHabit.setVal(
-					        		sleepTime,
-					        		getUpTime,
-					        		result.get(HabitQsState.IS_EXERCISE).getString("result").equals("yes"),
-					        		result.get(HabitQsState.IS_DRINKING).getString("result").equals("yes"),
-					        		result.get(HabitQsState.EAT_BREAKFAST).getString("result").equals("yes"),
-					        		result.get(HabitQsState.EAT_SNACK).getString("result").equals("yes"),
-					        		result.get(HabitQsState.SNACK_NAME).getString("result"));
-//						        lifeHabit.setText("4時に寝た", "10時に起きた", "運動してない", "飲んだ", "食べてない", "食べた", "ポテトチップスとチョコレート食べた");
-					        lifeHabit.setText(
-					        		result.get(HabitQsState.SLEEP).getString("text"),
-					        		result.get(HabitQsState.GETUP).getString("text"),
-					        		result.get(HabitQsState.IS_EXERCISE).getString("text"),
-					        		result.get(HabitQsState.IS_DRINKING).getString("text"),
-					        		result.get(HabitQsState.EAT_BREAKFAST).getString("text"),
-					        		result.get(HabitQsState.EAT_SNACK).getString("text"),
-					        		result.get(HabitQsState.SNACK_NAME).getString("text"));
-					        String res = MyHttpCon.postHabit(nickName, lifeHabit);
-						 	JSONObject data = new JSONObject(res);
-						    boolean	success = data.getBoolean("success");
-						 	if(success) {
-						 		MyLog.info(TAG, "success");
-						 	}
-						 // </結果を送信>
+							// 質問が終わったら
 						 	// モード更新
 							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_CONDITION);
 				        }
 						// </生活習慣を聞き出す>
 					}else if(mode == SotaState.Mode.LISTEN_CONDITION) {
 						// 体調を聞き出す
-						sotawish.Say("今日の体調はどんな感じ?");
-						Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+						if(ConditionQs.conditionQs(pose, mem, motion, sotawish, mic)) {
+							Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+						}
 					}else if(mode == SotaState.Mode.FIN) {
 						// 聞き取り終了
 						sotawish.Say("今日の質問はこれで終わり。");

@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import jp.hayamiti.utils.MyLog;
 
 public class HabitQsState extends State {
-	private static final String LOG_TAG = "HabitQs";
+	private static final String LOG_TAG = "HabitQsState";
 	public static final int IS_EXERCISE = 0;
 	public static final int IS_DRINKING = 1;
 	public static final int EAT_BREAKFAST = 2;
