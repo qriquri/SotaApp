@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.36.jar"/>
 	<classpathentry kind="lib" path="lib/sotalib.jar"/>
 	<classpathentry kind="lib" path="lib/SRClientHelper.jar"/>
+	<classpathentry kind="lib" path="lib/Hiddata.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

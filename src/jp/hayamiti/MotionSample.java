@@ -128,8 +128,8 @@ public class MotionSample {
 		CRobotUtil.Log(TAG, "Rev. " + mem.FirmwareRev.get());
 
 		//サーボモータを現在位置でトルクOnにする
-		CRobotUtil.Log(TAG, "Servo On");
-		motion.ServoOn();
+//		CRobotUtil.Log(TAG, "Servo On");
+//		motion.ServoOn();
 
 		//すべての軸を動作
 		pose = new CRobotPose();
@@ -147,8 +147,8 @@ public class MotionSample {
 
 
 		//サーボモータのトルクオフ
-		CRobotUtil.Log(TAG, "Servo Off");
-		motion.ServoOff();
+//		CRobotUtil.Log(TAG, "Servo Off");
+//		motion.ServoOff();
 	}
 
 	/**
