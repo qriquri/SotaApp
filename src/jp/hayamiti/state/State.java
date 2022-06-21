@@ -6,21 +6,5 @@ package jp.hayamiti.state;
  *
  */
 abstract public class State {
-	/**
-	 * action
-	 * @author HayamitiHirotaka
-	 *
-	 */
-	public abstract class Action{
-
-	}
-	/**
-	 * mode
-	 * @author HayamitiHirotaka
-	 *
-	 */
-	public abstract class Mode{
-
-	}
-    public abstract  <T> void change(String action, T val);
+	public abstract <T> void dispatch(Enum<?> action, T val);
 }
