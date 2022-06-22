@@ -106,7 +106,7 @@ public class ConditionQs {
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("今日の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			// <録音>
-			mic.startRecording(REC_PATH, 10000);
+			mic.startRecording(REC_PATH, 5000);
 			mic.waitend();
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
@@ -133,6 +133,7 @@ public class ConditionQs {
 	}
 
 	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, JSONObject result) {
+		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
 			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
@@ -144,7 +145,7 @@ public class ConditionQs {
 					sotawish.Say("送信に失敗したよ。");
 				}
 				// </結果を送信>
-				return true;
+				isConformed = true;
 			} else {
 				// 聞き直す
 				// モード更新
@@ -157,7 +158,7 @@ public class ConditionQs {
 		}
 		// yesOrNo処理
 		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
-		return false;
+		return isConformed;
 	}
 
 	private static boolean sendResult(JSONObject result) {
@@ -171,10 +172,10 @@ public class ConditionQs {
 			JSONObject data = new JSONObject(res);
 		    boolean	success = data.getBoolean("success");
 		 	if(success) {
-		 		CRobotUtil.Log(TAG, "success");
+		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;
 		 	}else {
-		 		CRobotUtil.Log(TAG, "失敗");
+		 		CRobotUtil.Log(TAG, "登録失敗");
 		 		isSuccess = false;
 		 	}
 		} catch (Exception e) {

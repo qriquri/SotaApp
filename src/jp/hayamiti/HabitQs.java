@@ -90,76 +90,7 @@ public class HabitQs {
 			// </答えを確認>
 		} else if (mode == HabitQsState.Mode.WAIT_CONFORM_ANS) {
 			// <確認待機>
-			Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
-			if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
-				boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
-				if (isYes) {
-					// モード更新
-					Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
-					if (questionI == HabitQsState.QuestionI.EAT_SNACK) {
-						// お菓子食べてなかったら、お菓子の名前を聞くのはスキップ
-						String isEat = result.get(questionI.ordinal()).getString("result");
-						if (!isEat.equals("yes")) {
-							questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+2];
-						} else {
-							questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+1];
-						}
-					} else if (questionI == HabitQsState.QuestionI.GETUP) {
-						// 終了
-						questionI = HabitQsState.QuestionI.IS_EXERCISE;
-						// <結果を送信>
-						FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
-						// sotaと会話している人の名前を取得
-						ArrayList<JSONObject> fnResults = fnState.getResults();
-						String nickName = fnResults.get(fnResults.size() - 1).getString("nickName");
-			        	LifeHabit lifeHabit = new LifeHabit();
-				        int sleepTime = Integer.parseInt(result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("result"));
-				        int getUpTime = Integer.parseInt(result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("result"));
-				        lifeHabit.setVal(
-				        		sleepTime,
-				        		getUpTime,
-				        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("result").equals("yes"),
-				        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("result").equals("yes"),
-				        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("result").equals("yes"),
-				        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("result").equals("yes"),
-				        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("result"));
-				        lifeHabit.setText(
-				        		result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("text"),
-				        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("text"));
-				        try {
-				        String res = MyHttpCon.postHabit(nickName, lifeHabit);
-					 	JSONObject data = new JSONObject(res);
-					    boolean	success = data.getBoolean("success");
-					 	if(success) {
-					 		CRobotUtil.Log(TAG, "success");
-					 	}
-				        }catch (Exception e) {
-				        	e.printStackTrace();
-				        	CRobotUtil.Log(TAG, "失敗");
-				        }
-					 // </結果を送信>
-						isFinish = true;
-					} else {
-						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+1];
-					}
-					Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_QUESTION_IDX, questionI);
-				} else {
-					// 聞き直す
-					// モード更新
-					Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
-				}
-			} else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
-				// 確認しなおす
-				// モード更新
-				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
-			}
-			// yesOrNo処理
-			YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+			isFinish = watiConform(pose, mem, motion, sotawish, mic, questionI, result);
 			// </確認待機>
 		}
 
@@ -241,5 +172,91 @@ public class HabitQs {
 			sotawish.Say("エラーが起きたからもう一度聞くね");
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 		}
+	}
+
+	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, ArrayList<JSONObject> result) {
+		boolean isConformed = false;
+		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
+		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
+			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
+			if (isYes) {
+				// モード更新
+				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
+				if (questionI == HabitQsState.QuestionI.EAT_SNACK) {
+					// お菓子食べてなかったら、お菓子の名前を聞くのはスキップ
+					String isEat = result.get(questionI.ordinal()).getString("result");
+					if (!isEat.equals("yes")) {
+						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+2];
+					} else {
+						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+1];
+					}
+				} else if (questionI == HabitQsState.QuestionI.GETUP) {
+					// 終了
+					questionI = HabitQsState.QuestionI.IS_EXERCISE;
+					// <結果を送信>
+					if(!sendResult(result)) {
+						sotawish.Say("登録に失敗しました。");
+					}
+					// </結果を送信>
+					isConformed =true;
+				} else {
+					questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+1];
+				}
+				Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_QUESTION_IDX, questionI);
+			} else {
+				// 聞き直す
+				// モード更新
+				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
+			}
+		} else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
+			// 確認しなおす
+			// モード更新
+			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+		}
+		// yesOrNo処理
+		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+		return isConformed;
+	}
+
+	private static boolean sendResult(ArrayList<JSONObject> result) {
+	    boolean	isSuccess = false;
+		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
+		// sotaと会話している人の名前を取得
+		ArrayList<JSONObject> fnResults = fnState.getResults();
+		String nickName = fnResults.get(fnResults.size() - 1).getString("nickName");
+    	LifeHabit lifeHabit = new LifeHabit();
+        int sleepTime = Integer.parseInt(result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("result"));
+        int getUpTime = Integer.parseInt(result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("result"));
+        lifeHabit.setVal(
+        		sleepTime,
+        		getUpTime,
+        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("result").equals("yes"),
+        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("result").equals("yes"),
+        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("result").equals("yes"),
+        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("result").equals("yes"),
+        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("result"));
+        lifeHabit.setText(
+        		result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("text"),
+        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("text"));
+        try {
+	        String res = MyHttpCon.postHabit(nickName, lifeHabit);
+		 	JSONObject data = new JSONObject(res);
+		    boolean	success = data.getBoolean("success");
+		 	if(success) {
+		 		CRobotUtil.Log(TAG, "success");
+		 		isSuccess = true;
+		 	}else {
+		 		CRobotUtil.Log(TAG, "登録失敗");
+		 	}
+        }catch (Exception e) {
+        	e.printStackTrace();
+        	CRobotUtil.Log(TAG, "失敗");
+        }
+        return isSuccess;
 	}
 }
