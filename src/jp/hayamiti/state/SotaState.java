@@ -13,51 +13,50 @@ import jp.hayamiti.utils.MyLog;
 public class SotaState extends State{
 	private static final String LOG_TAG = "SotaState";
     //<action>
-    public class Action{
-	    public static final String TOGGLE_RECORD = "toggle-record";
-	    public static final String UPDATE_RECORD_RESULT = "update-record-result";
-	    public static final String UPDATE_SP_REC_RESULT = "update-sp-rec-result";
-	    public static final String UPDATE_MODE = "update-mode";
+    public enum Action{
+	    TOGGLE_RECORD,
+	    UPDATE_RECORD_RESULT,
+	    UPDATE_SP_REC_RESULT,
+	    UPDATE_MODE
     }
     //</action>
     //<mode>
-    public class Mode{
-	    public static final String WAIT = "wait";
-	    public static final String LISTENING = "listening";
-	    public static final String JUDDGING = "juddging";
-	    public static final String RECORDING = "recording";
-	    public static final String CAPTUREING = "captureing";
-	    public static final String FIND_NAME = "find_name";
-	    public static final String CONFORM_ALEADY_LISTENED = "conform-aleady-listened";
-	    public static final String LISTEN_HABIT = "listen_habit";
-	    public static final String LISTEN_CONDITION = "listen_condition";
-	    public static final String ADVISE = "advise";
-	    public static final String FIN = "fin";
-
+    public enum Mode{
+	    WAIT,
+	    LISTENING,
+	    JUDDGING,
+	    RECORDING,
+	    CAPTUREING,
+	    FIND_NAME,
+	    CONFORM_ALEADY_LISTENED,
+	    LISTEN_HABIT,
+	    LISTEN_CONDITION,
+	    ADVISE,
+	    FIN
     }
     //</mode>
     //<state>
     private boolean isRecord = false;
     private ArrayList<String> recordResult = new ArrayList<String >();
     private String spRecResult = "";
-    private String mode = Mode.WAIT;
+    private Enum<Mode> mode = Mode.WAIT;
     //</state>
     @Override
-    public <T> void change(String  action, T val){
-    	MyLog.info(LOG_TAG, "change:" + action);
+    public <T> void dispatch(Enum<?> action, T val){
+    	MyLog.info(LOG_TAG, "change:" + toString());
         // break忘れんなよ!
-        switch (action){
-            case Action.TOGGLE_RECORD:
+        switch ((Action)action){
+            case TOGGLE_RECORD:
                 isRecord = !isRecord;
                 break;
-            case Action.UPDATE_RECORD_RESULT:
+            case UPDATE_RECORD_RESULT:
                 recordResult.add((String) val);
                 break;
-            case Action.UPDATE_SP_REC_RESULT:
+            case UPDATE_SP_REC_RESULT:
             	spRecResult = (String) val;
             	break;
-            case Action.UPDATE_MODE:
-            	mode = (String) val;
+            case UPDATE_MODE:
+            	mode = (Mode) val;
             	break;
             default:
                 break;
@@ -72,7 +71,7 @@ public class SotaState extends State{
     public String getSpRecResult() {
     	return spRecResult;
     }
-    public String getMode() {
+    public Enum<Mode> getMode() {
     	return mode;
     }
     //</getter>

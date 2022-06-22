@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
@@ -24,45 +25,40 @@ public class FindName {
 	static final String TEST_REC_PATH = "./test_rec.wav";
 	static final String FIND_NAME_REC_PATH = "./find_name.wav";
 	public static void main(String[] args) {
-        // サーバーと通信する用のソケット
-//		MyWsClient client = null;
+		CRobotPose pose = null;
+		//VSMDと通信ソケット・メモリアクセス用クラス
+		CRobotMem mem = new CRobotMem();
+		//Sota用モーション制御クラス
+		CSotaMotion motion = new CSotaMotion(mem);
+		MotionAsSotaWish sotawish = new MotionAsSotaWish(motion);
+		//マイク
+		CRecordMic mic = new CRecordMic();
 		try {
-			CRobotPose pose = null;
-			//VSMDと通信ソケット・メモリアクセス用クラス
-			CRobotMem mem = new CRobotMem();
-			//Sota用モーション制御クラス
-			CSotaMotion motion = new CSotaMotion(mem);
-			//Sota用スピーチ認識クラス
-//			SpeechRecog recog = new SpeechRecog(motion);
-			//sotawish初期化
-			MotionAsSotaWish sotawish = new MotionAsSotaWish(motion);
-
-			//マイク
-			CRecordMic mic = new CRecordMic();
-			//< Socket設定>
-//	        MyWsClient.on(new MessageListener());
-//	        MyWsClient.on(new AudioListener());
-//	        MyWsClient.on(new FindNameListener());
-//	        MyWsClient.on(new YesOrNoListener());
-//	        client = new MyWsClient(new URI("ws://192.168.1.49:8000"));
-//	        client.connect();
-	        //</ Socket設定>
+			//Store 初期化 stateを束ねる
+			ArrayList<State> stateList = new ArrayList<State>() {{
+				add(new SotaState());
+				add(new FindNameState());
+				add(new YesOrNoState());
+			}};
+			Store.conbineState(stateList);
 
 	        // <stateの取得>
-			SotaState sotaState = (SotaState)Store.getState(Store.SOTA_STATE);
-			FindNameState findNameState = (FindNameState)Store.getState(Store.FIND_NAME_STATE);
+			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
+			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
 			// </stateの取得>
 			// sotaのモードを取得
-			String mode = sotaState.getMode();
+			Enum<SotaState.Mode> mode = sotaState.getMode();
 			// sotaと会話している人の名前を取得
 			ArrayList<JSONObject> results = findNameState.getResults();
 			if(mem.Connect()){
 				//Sota仕様にVSMDを初期化
 				motion.InitRobot_Sota();
+				// サーボモーターをon
+				motion.ServoOn();
 				// 気を付けのポーズに戻す
 				MotionSample.defaultPose(pose, mem, motion);
 				// sotaのモードをlisteningに変化
-				Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 				while(true){
 					// モード取得
 					mode = sotaState.getMode();
@@ -80,9 +76,9 @@ public class FindName {
 						}
 						// 録音
 //						recordForSpRec(mic);
-				        SpeechRec.recordForSpRecByHttp(mic);
+				        SpeechRec.recordARecogByHttp(mic);
 						// モード更新
-				        Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
+				        Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 					}else if(mode == SotaState.Mode.WAIT) {
 						GamingLED.on(pose, mem, motion);
 						if(results.size() > 0) {
@@ -109,7 +105,7 @@ public class FindName {
 									// 名前削除
 									for(int i = 0; i < nameNum; i++) {
 										// リストは消すと減っていくから、先頭を常に消す
-										Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.REMOVE_NAME, 0);
+										Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
 									}
 									MyLog.info(TAG, "名前の数"+ findNameState.getResults());
 								}else {
@@ -120,29 +116,29 @@ public class FindName {
 								break;
 							}else if(recordResult.contains("おはよう") || recordResult.contains("こんにちは") || recordResult.contains("こんばんは")) {
 								// モード更新
-								Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIND_NAME);
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIND_NAME);
 							}else {
 								// モード更新
-								Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 							}
 						}
 					}else if(mode == SotaState.Mode.FIND_NAME) {
-						findName(pose, mem, motion, sotawish, mic);
+						if(findName(pose, mem, motion, sotawish, mic)) {
+						// モード更新
+						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+
+						}
 					}
 				}
-				Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.WAIT);
 				// 箱に直しやすいポーズにする
 				MotionSample.stragePose(pose, mem, motion);
-				// LED発光
-				CRobotUtil.Log(TAG, "LED");
-				while(true) {
-					GamingLED.on(pose, mem, motion);
-				}
 		}
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
-			// 通信終了
-//			client.disconnect();
+			e.printStackTrace();
+		}finally {
+			GamingLED.off(pose, mem, motion);
+			motion.ServoOff();
 		}
 	}
 
@@ -155,121 +151,32 @@ public class FindName {
 	 * @param mic
 	 */
 	public static boolean findName(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
-		String mode = ((FindNameState) Store.getState(Store.FIND_NAME_STATE)).getMode();
-		ArrayList<JSONObject> results = ((FindNameState) Store.getState(Store.FIND_NAME_STATE)).getResults();
-		JSONArray listenResults = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getListenResults();
-		int count = ((FindNameState)Store.getState(Store.FIND_NAME_STATE)).getCount();
+		Enum<FindNameState.Mode> mode = ((FindNameState) Store.getState(FindNameState.class)).getMode();
+		ArrayList<JSONObject> results = ((FindNameState) Store.getState(FindNameState.class)).getResults();
+		JSONArray listenResults = ((FindNameState)Store.getState(FindNameState.class)).getListenResults();
+		int count = ((FindNameState)Store.getState(FindNameState.class)).getCount();
 		boolean isFind = false;
 		if(mode == FindNameState.Mode.LISTENNING_NAME) {
-			// 送信処理に時間がかかるかもしれないから、新たにスレッドを作る
+			// 聞き取り
 			recordForFindNameByHttp(mic, sotawish);
-//			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_FIND_NAME);
-		}else if(mode == FindNameState.Mode.WAIT_FIND_NAME) {
-			// 待機 ユーザーの応答とサーバーからの応答を待つときにこの状態になる
-			// MyWsClientに登録したイベントリスナーがstateを書き換えることによってこの状態から抜け出せる
-			GamingLED.on(pose, mem, motion);
-			//音声ファイル再生
-			//raw Waveファイルのみ対応
-			sotawish.Say("なるほどなるほど");
 		}else if(mode == FindNameState.Mode.CONFORM_NAME) {
 			// 名前が合ってるか確認
-			CRobotUtil.Log(TAG,"データベースに登録されていた数" + (listenResults.length()));
-			MyLog.info(TAG, "count = "+count);
-			String newName = "";
-			if(listenResults.getJSONObject(count).getBoolean("isRegistered")) {
-				// 登録済みならニックネームで呼ぶ
-				newName = listenResults.getJSONObject(count).getString("nickName");
-			}else {
-				// 未登録な名前で呼ぶ
-				newName = listenResults.getJSONObject(count).getString("furigana");
-			}
-			sotawish.Say(newName +"さん,で合ってる?");
-			// モード更新
-			if(listenResults.length() == 1) {
-				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);
-			}else if(listenResults.length() > 1) {
-				// 結果が複数の場合
-				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM_MULTIPLE);
-			}
+			conformName(sotawish, count, listenResults);
 		}else if(mode == FindNameState.Mode.WAIT_CONFORM) {
 			// 確認待機
-			String yesOrNoMode = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getMode();
-			if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
-				boolean isYes = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getIsYes();
-				if(isYes) {
-					// モード更新
-					Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.FINDED_NAME);
-					Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.ADD_NAME, listenResults.getJSONObject(count));
-				}else {
-					// 聞き直す
-					// モード更新
-					Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
-				}
-			}else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
-				// 確認しなおす
-				// モード更新
-				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
-			}
-			// yesOrNo処理
-			YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+			waitConform(pose, mem, motion, sotawish, mic, count, listenResults);
 		}else if(mode == FindNameState.Mode.WAIT_CONFORM_MULTIPLE){
 			// 確認待機
-			String yesOrNoMode = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getMode();
-			if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
-				boolean isYes = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getIsYes();
-				if(isYes) {
-					// 正解
-					// モード更新
-					Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.FINDED_NAME);
-					Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.ADD_NAME, listenResults.getJSONObject(count));
-				}else {
-					// 不正解
-					if(count != listenResults.length() -1) {
-						// カウントを進め、次の名前を聞くようにする
-						Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.COUNT, 1);
-						// モード更新
-						Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
-					}else {
-						// 配列の最後まで聞いたら
-						// 聞き直す
-						// モード更新
-						Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
-					}
-				}
-			}else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
-				// 確認しなおす
-				// モード更新
-				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
-			}
-			// yesOrNo処理
-			YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
-
+			 waitConfromMultiple(pose, mem, motion, sotawish, mic, count, listenResults);
 		}else if(mode == FindNameState.Mode.FINDED_NAME) {
 			// 名前を見つけた時
-			CRobotUtil.Log(TAG,"数" + (results.size()));
-			String newName = results.get(results.size()-1).getString("furigana");
-			boolean isRegistered = results.get(results.size()-1).getBoolean("isRegistered");
-			if(isRegistered) {
-				// すでに記憶済みの名前の時
-				CRobotUtil.Log(TAG, newName);
-				sotawish.Say(newName+"さん,こんにちは");
-			}else {
-				// 初めての名前の時
-				CRobotUtil.Log(TAG, newName);
-				sotawish.Say(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.");
-			}
-			// <モード更新>
-//			Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
-			// また呼ばれたときのために始めのモードに戻しておく
-			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
-			// </モード更新>
-			isFind = true;
+			isFind = findedName(sotawish, results);
 		}else if(mode == FindNameState.Mode.ERROR_NAME) {
 			// 名前を見つけられなかったとき
 			sotawish.Say("聞き取れなかったよ");
 			// <モード更新>
 			// もう一度やり直す
-			Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
+			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
 			// <モード更新>
 		}
 		return isFind;
@@ -344,18 +251,115 @@ public class FindName {
 			JSONObject userNames = new JSONObject(result);
 			Boolean err = userNames.getBoolean("err");
 			if(err) {
-				Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
+				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
 			}else {
 
 	    		// 追加する
-	        	Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.SET_LISTEN_RESULT, userNames.getJSONArray("users"));
-	            Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+	        	Store.dispatch(FindNameState.class, FindNameState.Action.SET_LISTEN_RESULT, userNames.getJSONArray("users"));
+	            Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
 			}
 			//</データベースからユーザー情報を取得>
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
-            Store.dispatch(Store.FIND_NAME_STATE, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
+            Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
 		}
+	}
+
+	private static void conformName(MotionAsSotaWish sotawish, int count, JSONArray listenResults) {
+		CRobotUtil.Log(TAG,"データベースに登録されていた数" + (listenResults.length()));
+		MyLog.info(TAG, "count = "+count);
+		String newName = "";
+		if(listenResults.getJSONObject(count).getBoolean("isRegistered")) {
+			// 登録済みならニックネームで呼ぶ
+			newName = listenResults.getJSONObject(count).getString("nickName");
+		}else {
+			// 未登録な名前で呼ぶ
+			newName = listenResults.getJSONObject(count).getString("furigana");
+		}
+		sotawish.Say(newName +"さん,で合ってる?");
+		// モード更新
+		if(listenResults.length() == 1) {
+			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);
+		}else if(listenResults.length() > 1) {
+			// 結果が複数の場合
+			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM_MULTIPLE);
+		}
+	}
+
+	private static void waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, JSONArray listenResults) {
+		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
+		if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
+			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
+			if(isYes) {
+				// モード更新
+				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.FINDED_NAME);
+				Store.dispatch(FindNameState.class, FindNameState.Action.ADD_NAME, listenResults.getJSONObject(count));
+			}else {
+				// 聞き直す
+				// モード更新
+				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
+			}
+		}else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
+			// 確認しなおす
+			// モード更新
+			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+		}
+		// yesOrNo処理
+		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+	}
+
+	private static void waitConfromMultiple(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, JSONArray listenResults) {
+		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
+		if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
+			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
+			if(isYes) {
+				// 正解
+				// モード更新
+				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.FINDED_NAME);
+				Store.dispatch(FindNameState.class, FindNameState.Action.ADD_NAME, listenResults.getJSONObject(count));
+			}else {
+				// 不正解
+				if(count != listenResults.length() -1) {
+					// カウントを進め、次の名前を聞くようにする
+					Store.dispatch(FindNameState.class, FindNameState.Action.COUNT, 1);
+					// モード更新
+					Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+				}else {
+					// 配列の最後まで聞いたら
+					// 聞き直す
+					// モード更新
+					Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
+				}
+			}
+		}else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
+			// 確認しなおす
+			// モード更新
+			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+		}
+		// yesOrNo処理
+		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+
+	}
+
+	private static boolean findedName(MotionAsSotaWish sotawish,ArrayList<JSONObject> results) {
+		CRobotUtil.Log(TAG,"数" + (results.size()));
+		String newName = results.get(results.size()-1).getString("furigana");
+		boolean isRegistered = results.get(results.size()-1).getBoolean("isRegistered");
+		if(isRegistered) {
+			// すでに記憶済みの名前の時
+			CRobotUtil.Log(TAG, newName);
+			sotawish.Say(newName+"さん,こんにちは");
+		}else {
+			// 初めての名前の時
+			CRobotUtil.Log(TAG, newName);
+			sotawish.Say(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.");
+		}
+		// <モード更新>
+//		Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+		// また呼ばれたときのために始めのモードに戻しておく
+		Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
+		// </モード更新>
+		return true;
 	}
 
 	public static String nameConnection(ArrayList<String> names) {

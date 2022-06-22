@@ -6,33 +6,33 @@ public class YesOrNoState extends State{
 
 	private static final String LOG_TAG = "YesOrNoState";
     //<action>
-    public class Action{
-	    public static final String UPDATE_MODE = "update-mode";
-	    public static final String SET_ISYES = "set-is-yes";
+    public enum Action{
+	    UPDATE_MODE,
+	    SET_ISYES
     }
     //</action>
     //<mode>
-    public class Mode{
-	    public static final String LISTENNING_YES_OR_NO = "listening_yes_or_no";
-	    public static final String WAIT = "wait";
-	    public static final String LISTENED_YES_OR_NO = "listened_yes_or_no";
-	    public static final String ERROR = "error";
+    public enum Mode{
+	    LISTENNING_YES_OR_NO,
+	    WAIT,
+	    LISTENED_YES_OR_NO,
+	    ERROR
 
     }
     //</mode>
     //<state>
-    private String mode = Mode.LISTENNING_YES_OR_NO;
+    private Enum<Mode> mode = Mode.LISTENNING_YES_OR_NO;
     private boolean isYes = false;
     //</state>
     @Override
-    public <T> void change(String  action, T val){
-    	MyLog.info(LOG_TAG, "change:" + action);
+    public <T> void dispatch(Enum<?> action, T val){
+    	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
-        switch (action){
-            case Action.UPDATE_MODE:
-            	mode = (String) val;
+        switch ((Action) action){
+            case UPDATE_MODE:
+            	mode = (Mode) val;
             	break;
-            case Action.SET_ISYES:
+            case SET_ISYES:
             	isYes = (boolean) val;
             	break;
             default:
@@ -41,7 +41,7 @@ public class YesOrNoState extends State{
     }
 
     //<getter>
-    public String getMode() {
+    public Enum<Mode> getMode() {
     	return mode;
     }
     public boolean getIsYes() {

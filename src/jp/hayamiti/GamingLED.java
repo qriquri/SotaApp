@@ -94,7 +94,7 @@ public class GamingLED {
 		ledColor[0] = 0;
 	    ledColor[1] = 0;
 	    ledColor[2] = 0;
-	    pose.setLED_Sota(new Color(ledColor[0], ledColor[1], ledColor[2]), new Color(ledColor[0], ledColor[1], ledColor[2]), 255, new Color(ledColor[0], ledColor[1], ledColor[2]));
+	    pose.setLED_Sota(new Color(ledColor[0], ledColor[1], ledColor[2]), new Color(ledColor[0], ledColor[1], ledColor[2]), 0, new Color(0, 255, 0));
 //	    CRobotUtil.Log(TAG, "isPlayed:" + motion.play(pose, 250));
 	    motion.play(pose, 250);
 	    motion.waitEndinterpAll();

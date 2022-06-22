@@ -7,43 +7,43 @@ import jp.hayamiti.utils.MyLog;
 public class ConditionQsState extends State {
 	private static final String LOG_TAG = "ConditionQsState";
 
-	public class Action{
-		public static final String UPDATE_MODE = "update-mode";
-		public static final String RESET_RESULT = "reset-result";
-		public static final String SET_LISTEN_RESULT = "set-listen-result";
+	public enum Action{
+		UPDATE_MODE,
+		RESET_RESULT,
+		SET_LISTEN_RESULT
 	}
 
-	public class Mode{
-		public static final String LISTEN_ANS = "listen-ans";
-		public static final String CONFORM_ANS = "conform-ans";
-		public static final String WAIT_CONFORM_ANS = "wait-conform-ans";
-		public static final String ERROR_ANS = "error-ans";
+	public enum Mode{
+		LISTEN_ANS,
+		CONFORM_ANS,
+		WAIT_CONFORM_ANS,
+		ERROR_ANS
 	}
 
-	private String mode = Mode.LISTEN_ANS;
+	private Enum<Mode> mode = Mode.LISTEN_ANS;
 	private JSONObject result = null;
 
 	@Override
-	public <T> void change(String action, T val) {
-		// TODO 自動生成されたメソッド・スタブ
-		MyLog.info(LOG_TAG, "change:" + action);
+	public <T> void dispatch(Enum<?> action, T val){
+		
+		MyLog.info(LOG_TAG, "change:" + action.toString());
 
-		switch(action) {
-		case Action.UPDATE_MODE:
-			mode = (String)val;
+		switch((Action)action) {
+		case UPDATE_MODE:
+			mode = (Mode)val;
 			break;
-		case Action.RESET_RESULT:
+		case RESET_RESULT:
 			String itemStr = "{\"result\": \"\", \"text\": \"\"}";
 			result = new JSONObject(itemStr);
 			break;
-		case Action.SET_LISTEN_RESULT:
+		case SET_LISTEN_RESULT:
 			result = (JSONObject)val;
 			break;
 		}
 
 	}
 
-	public String getMode() {
+	public Enum<Mode> getMode() {
 		return mode;
 	}
 	public JSONObject getResult() {

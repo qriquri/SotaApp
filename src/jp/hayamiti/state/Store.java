@@ -1,78 +1,64 @@
 package jp.hayamiti.state;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import jp.hayamiti.utils.MyLog;
+
 /**
  * 状態管理用クラス 必要に応じてステートを追加して使う
  * @author HayamitiHirotaka
  *
  */
 public class Store {
-    public static final String SOTA_STATE = "sota-state";
-    public static final String FIND_NAME_STATE = "find-name-state";
-    public static final String YES_OR_NO_STATE = "yes-or-no-state";
-    public static final String SPEECH_REC_STATE = "speech_rec_state";
-    public static final String HABIT_QS_STATE = "habit-qs-state";
-    public static final String CONDITION_QS_STATE = "condition-qs-state";
-    private static final State sotaState = new SotaState();
-    private static final State findNameState = new FindNameState();
-    private static final State yesOrNoState = new YesOrNoState();
-    private static final State speechRecState = new SpeechRecState();
-    private static final State habitQsState = new HabitQsState();
-    private static final State conditionQsState = new ConditionQsState();
-    /**
+	private static final String TAG = "Store";
+    private static Map<Class<? extends State>, State> stateMap = new HashMap<>();
+	/**
+	 * ステートを束ねる
+	 * @param stateList
+	 */
+	public static void conbineState(ArrayList<State> stateList) {
+    	for (int i = 0; i < stateList.size(); i++) {
+    		stateMap.put(stateList.get(i).getClass(), stateList.get(i));
+    	}
+    }
+
+	/**
+	 * 指定されたステートを指定されたアクションに応じて処理する
+	 * @param <T>
+	 * @param klass
+	 * @param action
+	 * @param val
+	 */
+	public static  <T>  void dispatch(Class<? extends State> klass, Enum<?> action, T val) {
+		State state = getState(klass);
+		state.dispatch(action, val);
+	}
+
+	/**
      * ステートの取得 キャスト推奨
-     * @param stateName 欲しいステートの名前
+     * @param klass ほしいステートのクラス
      * @return ステート
      */
-    public static State getState(String stateName){
-        switch (stateName){
-            case SOTA_STATE:
-                return sotaState;
-            case FIND_NAME_STATE:
-            	return findNameState;
-            case YES_OR_NO_STATE:
-            	return yesOrNoState;
-            case SPEECH_REC_STATE:
-            	return speechRecState;
-            case HABIT_QS_STATE:
-            	return habitQsState;
-            case CONDITION_QS_STATE:
-            	return conditionQsState;
-            default:
-
-                break;
-        }
-        return null;
+    public static State getState(Class<? extends State> klass){
+    	// null だったら例外を出す
+    	Optional<State> stateOpt = Optional.of(stateMap.get(klass));
+        return stateOpt.get();
     }
 
-    /**
-     * 値の変更
-     * @param stateName 更新したいステートの名前
-     * @param action アクション名
-     * @param val 値
-     * @param <T>　型
-     */
-    public static <T> void dispatch(String stateName, String action,T val){
-        switch (stateName){
-            case SOTA_STATE:
-                sotaState.change(action, val);
-                break;
-            case FIND_NAME_STATE:
-            	findNameState.change(action, val);
-            	break;
-            case YES_OR_NO_STATE:
-            	yesOrNoState.change(action, val);
-            	break;
-            case SPEECH_REC_STATE:
-            	speechRecState.change(action, val);
-            	break;
-            case HABIT_QS_STATE:
-            	habitQsState.change(action, val);
-            	break;
-            case CONDITION_QS_STATE:
-            	conditionQsState.change(action, val);
-            	break;
-            default:
-                break;
-        }
-    }
+	public static void main(String[] args) {
+		ArrayList<State> stateList = new ArrayList<State>(){{
+			add(new FindNameState());
+		}};
+		Store.conbineState(stateList);
+
+		FindNameState fnState = (FindNameState) Store.getState(FindNameState.class);
+		fnState.dispatch(FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);
+		MyLog.info(TAG, fnState.getMode().toString());
+
+		Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
+		MyLog.info(TAG, fnState.getMode().toString());
+	}
 }

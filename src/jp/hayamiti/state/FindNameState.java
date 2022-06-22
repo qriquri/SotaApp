@@ -10,56 +10,56 @@ import jp.hayamiti.utils.MyLog;
 public class FindNameState extends State {
 	private static final String LOG_TAG = "FindNameState";
     //<action>
-    public class Action{
-	    public static final String UPDATE_MODE = "update-mode";
-	    public static final String ADD_NAME = "add-name";
-	    public static final String SET_LISTEN_RESULT = "set_listen_result";
-	    public static final String REMOVE_NAME = "remove-name";
-	    public static final String SET_ISCOLLECT = "set-is-collect";
-	    public static final String COUNT = "count";
+    public enum Action{
+	    UPDATE_MODE,
+	    ADD_NAME,
+	    SET_LISTEN_RESULT,
+	    REMOVE_NAME,
+	    SET_ISCOLLECT,
+	    COUNT
     }
     //</action>
     //<mode>
-    public class Mode{
-	    public static final String LISTENNING_NAME = "listening_name";
-	    public static final String WAIT_FIND_NAME = "wait_find_name";
-	    public static final String CONFORM_NAME = "conform_name";
-	    public static final String WAIT_CONFORM = "wait_conform"; // yes/no応答待ち
-	    public static final String WAIT_CONFORM_MULTIPLE = "wait_confrom_multiple"; // 同じ名前が複数ある場合
-	    public static final String FINDED_NAME = "finded_name";
-	    public static final String ERROR_NAME = "error_name";
+    public enum Mode{
+	    LISTENNING_NAME,
+	    WAIT_FIND_NAME,
+	    CONFORM_NAME,
+	    WAIT_CONFORM,// yes/no応答待ち
+	    WAIT_CONFORM_MULTIPLE,// 同じ名前が複数ある場合
+	    FINDED_NAME,
+	    ERROR_NAME,
 
     }
     //</mode>
     //<state>
-    private String mode = Mode.LISTENNING_NAME;
+    private Enum<Mode> mode = Mode.LISTENNING_NAME;
     private ArrayList<JSONObject> results = new ArrayList<JSONObject>(); // 確認済みの正しい結果
     private JSONArray listenResults = new JSONArray(); // 聞き取っただけのまだ確認していない結果
     private int count = 0; // 名前確認の際に何番目の名前をチェックしているか
     private boolean isCollect = false;
     //</state>
     @Override
-    public <T> void change(String  action, T val){
-    	MyLog.info(LOG_TAG, "change:" + action);
+    public <T> void dispatch(Enum<?> action, T val){
+    	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
-        switch (action){
-            case Action.UPDATE_MODE:
-            	mode = (String) val;
+        switch ((Action) action){
+            case UPDATE_MODE:
+            	mode = (Mode) val;
             	break;
-            case Action.ADD_NAME:
+            case ADD_NAME:
             	results.add((JSONObject) val);
             	break;
-            case Action.REMOVE_NAME:
+            case REMOVE_NAME:
             	results.remove((int) val);
             	break;
-            case Action.SET_ISCOLLECT:
+            case SET_ISCOLLECT:
             	isCollect = (boolean) val;
             	break;
-            case Action.SET_LISTEN_RESULT:
+            case SET_LISTEN_RESULT:
             	listenResults = (JSONArray)val;
             	count=0;
             	break;
-            case Action.COUNT:
+            case COUNT:
             	count++;
             default:
                 break;
@@ -67,7 +67,7 @@ public class FindNameState extends State {
     }
 
     //<getter>
-    public String getMode() {
+    public Enum<Mode> getMode() {
     	return mode;
     }
     public ArrayList<JSONObject> getResults(){
