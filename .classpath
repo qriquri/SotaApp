@@ -15,5 +15,8 @@
 	<classpathentry kind="lib" path="lib/sotalib.jar"/>
 	<classpathentry kind="lib" path="lib/SRClientHelper.jar"/>
 	<classpathentry kind="lib" path="lib/Hiddata.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.13.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.13.2.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.13.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
