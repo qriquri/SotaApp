@@ -13,8 +13,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.utils.MyLog;
 
 public class MyHttpCon {
@@ -169,7 +169,7 @@ public class MyHttpCon {
 		    			+ ",\"snackNameT\":\"" + lifeHabit.getTextList()[6] + "\""
 		    			+ "}";
     	try {
-    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
+//    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
     		response = sendJSON(body, url);
     	}catch(Exception e) {
     		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
@@ -183,16 +183,21 @@ public class MyHttpCon {
     public static String postCondition(String nickName, String condition, String sentence) throws IOException{
     	String response = "{\"success\": false}";
     	String url = DB_HOME + "/postCondition";
-    	String body = "{\"nickName\":\"" + nickName + "\""
-    					+ ",\"condition\":\"" + condition  + "\""
-    					+ ",\"sentence\":\"" + sentence + "\""
-		    			+ "}";
+    	PostConditionReq req = new PostConditionReq();
+    	req.nickName = nickName;
+    	req.condition = condition;
+    	req.sentence = sentence;
+//    	String body = "{\"nickName\":\"" + nickName + "\""
+//    					+ ",\"condition\":\"" + condition  + "\""
+//    					+ ",\"sentence\":\"" + sentence + "\""
+//		    			+ "}";
     	try {
-    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
+    		String body = JSONMapper.mapper.writeValueAsString(req);
+//    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
     		response = sendJSON(body, url);
     	}catch(Exception e) {
     		MyLog.error(LOG_TAG, "postCondition err " + e.toString());
-    		MyLog.error(LOG_TAG, "postConditiont err " + body);
+//    		MyLog.error(LOG_TAG, "postConditiont err " + body);
     	}finally {
 
     	}

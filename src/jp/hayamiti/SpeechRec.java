@@ -2,9 +2,9 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
@@ -100,9 +100,10 @@ public class SpeechRec {
 			// </録音>
 			String result = MyHttpCon.speechRec(TEST_REC_PATH);
 			CRobotUtil.Log(TAG, result);
-			JSONObject data = new JSONObject(result);
-			MyLog.info(TAG,"get audio:" + data.getString("result"));
-            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, data.getString("result"));
+//			JSONObject data = new JSONObject(result);
+			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
+			MyLog.info(TAG,"get audio:" + res.result);
+            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, res.result);
 
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());

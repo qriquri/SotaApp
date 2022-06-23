@@ -55,7 +55,7 @@ public class HabitQsState extends State {
 
 	@Override
 	public <T> void dispatch(Enum<?> action, T val){
-		
+
 		MyLog.info(LOG_TAG, "change: " + action.toString());
 
 		switch ((Action)action) {
@@ -93,6 +93,8 @@ public class HabitQsState extends State {
 			break;
 		case SET_GETUP_LISTEN_RESULT:
 			result.set(QuestionI.GETUP.ordinal(), (JSONObject) val);
+			break;
+		default:
 			break;
 		}
 	}

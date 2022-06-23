@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONObject;
 
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
@@ -49,7 +50,7 @@ public class TestApp2 {
 			// sotaのモードを取得
 			Enum<SotaState.Mode> mode = sotaState.getMode();
 			// sotaと会話している人の名前を取得
-			ArrayList<JSONObject> results = findNameState.getResults();
+			ArrayList<User> results = findNameState.getResults();
 			if(mem.Connect()){
 				//Sota仕様にVSMDを初期化
 				motion.InitRobot_Sota();
@@ -82,7 +83,7 @@ public class TestApp2 {
 								if(results.size() > 0) {
 									ArrayList<String> names = new ArrayList<String>();
 									for(int i = 0; i < results.size(); i++) {
-										names.add(results.get(i).getString("furigana"));
+										names.add(results.get(i).furigana);
 									}
 									String nameList = FindName.nameConnection(names);
 									sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
@@ -116,7 +117,7 @@ public class TestApp2 {
 						// </名前聞き取り>
 					}else if(mode == SotaState.Mode.CONFORM_ALEADY_LISTENED) {
 						// <すでに質問済みかを確認する>
-						String nickName = results.get(results.size()-1).getString("nickName");
+						String nickName = results.get(results.size()-1).nickName;
 						if(nickName.equals("")) {
 							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 						}else {
@@ -153,7 +154,7 @@ public class TestApp2 {
 					}else if(mode == SotaState.Mode.FIN) {
 						// 聞き取り終了
 						sotawish.Say("今日の質問はこれで終わり。");
-						String nameList = results.get(0).getString("furigana");
+						String nameList = results.get(0).furigana;
 						// </sotaが認識した名前を繋げる>
 						sotawish.Say(nameList + "さん,さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
 						// 名前削除

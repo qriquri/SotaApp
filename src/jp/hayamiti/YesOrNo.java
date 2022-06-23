@@ -1,8 +1,8 @@
 package jp.hayamiti;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.vstone.RobotLib.CRecordMic;
@@ -70,9 +70,9 @@ public class YesOrNo {
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
 			String result = MyHttpCon.yesOrNo(YES_OR_NO_REC_PATH);
-			JSONObject data = new JSONObject(result);
 			CRobotUtil.Log(TAG, result);
-			String isYes =data.getString("result");
+			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
+			String isYes =res.result;
 			if(isYes.equals("yes")) {
         		Store.dispatch(YesOrNoState.class, YesOrNoState.Action.SET_ISYES, true);
         		Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENED_YES_OR_NO);

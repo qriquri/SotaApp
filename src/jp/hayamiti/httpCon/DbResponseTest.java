@@ -2,13 +2,14 @@ package jp.hayamiti.httpCon;
 
 import java.io.IOException;
 
-import jp.hayamiti.httpCon.DbResponse.GetTodayHabitRes;
-import jp.hayamiti.httpCon.DbResponse.GetUserNamesRes;
-import jp.hayamiti.httpCon.DbResponse.PostConditionRes;
-import jp.hayamiti.httpCon.DbResponse.PostHabitRes;
+import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.DbCom.GetTodayHabitRes;
+import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
+import jp.hayamiti.httpCon.DbCom.PostConditionRes;
+import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.utils.MyLog;
 
-public class DbResponseTest {
+public class DbResponseTest  {
 	private static final String TAG = "DbResponseTest";
 	public static void main(String[] args) {
 		try {

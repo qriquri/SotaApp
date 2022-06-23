@@ -1,6 +1,8 @@
-package jp.hayamiti.httpCon.DbResponse;
+package jp.hayamiti.httpCon.DbCom;
 
-public class GetTodayHabitRes{
+import jp.hayamiti.JSON.JACKSONObject;
+
+public class GetTodayHabitRes extends JACKSONObject{
 	public class GetTodayHabitResult{
 		public String nickName;
 		public long date;

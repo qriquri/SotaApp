@@ -1,7 +1,6 @@
 package jp.hayamiti.state;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
 import jp.hayamiti.utils.MyLog;
 
 public class ConditionQsState extends State {
@@ -21,11 +20,11 @@ public class ConditionQsState extends State {
 	}
 
 	private Enum<Mode> mode = Mode.LISTEN_ANS;
-	private JSONObject result = null;
+	private ConditionQsRes result = null;
 
 	@Override
 	public <T> void dispatch(Enum<?> action, T val){
-		
+
 		MyLog.info(LOG_TAG, "change:" + action.toString());
 
 		switch((Action)action) {
@@ -33,11 +32,12 @@ public class ConditionQsState extends State {
 			mode = (Mode)val;
 			break;
 		case RESET_RESULT:
-			String itemStr = "{\"result\": \"\", \"text\": \"\"}";
-			result = new JSONObject(itemStr);
+//			String itemStr = "{\"result\": \"\", \"text\": \"\"}";
+			result.result = "";
+			result.text = "";
 			break;
 		case SET_LISTEN_RESULT:
-			result = (JSONObject)val;
+			result = (ConditionQsRes)val;
 			break;
 		}
 
@@ -46,7 +46,7 @@ public class ConditionQsState extends State {
 	public Enum<Mode> getMode() {
 		return mode;
 	}
-	public JSONObject getResult() {
+	public ConditionQsRes getResult() {
 		return result;
 	}
 

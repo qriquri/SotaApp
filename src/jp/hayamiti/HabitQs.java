@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import jp.hayamiti.httpCon.LifeHabit;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.State;
@@ -222,8 +223,8 @@ public class HabitQs {
 	    boolean	isSuccess = false;
 		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 		// sotaと会話している人の名前を取得
-		ArrayList<JSONObject> fnResults = fnState.getResults();
-		String nickName = fnResults.get(fnResults.size() - 1).getString("nickName");
+		ArrayList<User> fnResults = fnState.getResults();
+		String nickName = fnResults.get(fnResults.size() - 1).nickName;
     	LifeHabit lifeHabit = new LifeHabit();
         int sleepTime = Integer.parseInt(result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("result"));
         int getUpTime = Integer.parseInt(result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("result"));

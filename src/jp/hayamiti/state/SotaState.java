@@ -43,7 +43,7 @@ public class SotaState extends State{
     //</state>
     @Override
     public <T> void dispatch(Enum<?> action, T val){
-    	MyLog.info(LOG_TAG, "change:" + toString());
+    	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
         switch ((Action)action){
             case TOGGLE_RECORD:

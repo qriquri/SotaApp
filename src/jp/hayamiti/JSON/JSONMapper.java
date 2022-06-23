@@ -1,4 +1,4 @@
-package jp.hayamiti.httpCon;
+package jp.hayamiti.JSON;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
