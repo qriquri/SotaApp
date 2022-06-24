@@ -42,7 +42,7 @@ public class TestApp2 {
 				add(new HabitQsState());
 				add(new ConditionQsState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
 			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
@@ -106,6 +106,9 @@ public class TestApp2 {
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 							}
 							// </聞き取った内容に応じて処理する>
+						}else {
+							// モード更新
+							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 						}
 						// </LISTENINGモードで聞き取った音声の判定>
 					}else if(mode == SotaState.Mode.FIND_NAME) {

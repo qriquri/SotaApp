@@ -2,10 +2,13 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import jp.hayamiti.httpCon.LifeHabit;
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
+import jp.hayamiti.httpCon.DbCom.PostHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
@@ -30,12 +33,17 @@ public class HabitQs {
 		ArrayList<State> stateList = new ArrayList<State>(){{
 			add(new HabitQsState());
 		}};
-		Store.conbineState(stateList);
+		Store.bind(stateList);
 		// int count = HabitQsState.IS_EXERCISE;
-		JSONObject yesNoAns = new JSONObject("{\"result\": true, \"text\": \"こんにちは\"}");
-
-		JSONObject timeAns = new JSONObject("{\"result\": 20, \"text\": \"こんにちは\"}");
-		JSONObject textAns = new JSONObject("{\"result\": \"チョコレート ポテトチップス\", \"text\": \"こんにちは\"}");
+		HabitQsRes yesNoAns = new HabitQsRes();
+		yesNoAns.result = "no";
+		yesNoAns.text = "してない";
+		HabitQsRes timeAns = new HabitQsRes();
+		timeAns.result = "7";
+		timeAns.text = "7時";
+		HabitQsRes textAns = new HabitQsRes();
+		textAns.result = "チョコレート ポテトチップス";
+		textAns.text = "チョコレートと ポテトチップス食べた";
 		Enum<HabitQsState.QuestionI>[] questionI = HabitQsState.QuestionI.values();
 		for (Enum<HabitQsState.QuestionI> i : questionI) {
 			switch ((HabitQsState.QuestionI)i) {
@@ -63,10 +71,12 @@ public class HabitQs {
 			}
 		}
 		HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
-		ArrayList<JSONObject> result = state.getResult();
-		for (Enum<HabitQsState.QuestionI> i : questionI) {
-			MyLog.info(TAG, "getResult: " + result.get(i.ordinal()).toString());
-		}
+		PostHabitReq result = state.getResult();
+			try {
+				MyLog.info(TAG, "getResult: " + JSONMapper.mapper.writeValueAsString(result));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
 
 		MyLog.info(TAG, "end");
 	}
@@ -76,16 +86,15 @@ public class HabitQs {
 		boolean isFinish = false;
 		HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
 		Enum<HabitQsState.Mode> mode = state.getMode();
-		// int qsNum = state.getQsNum();
 		Enum<HabitQsState.QuestionI> questionI = state.getQuestionI();
-		ArrayList<JSONObject> result = state.getResult();
+		PostHabitReq result = state.getResult();
 		if (mode == HabitQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
 			recordARecogByHttp(mic, sotawish, questionI);
 			// </質問をしてこたえを聞き取る>
 		} else if (mode == HabitQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(result.get(questionI.ordinal()).getString("result") + "、であってる?");
+			sotawish.Say(state.getConformText() + "、であってる?");
 			// モード更新
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -154,28 +163,28 @@ public class HabitQs {
 
 			// apiサーバーに送信して、解析してもらう
 			String result = MyHttpCon.habitQs(REC_PATH, type);
-			CRobotUtil.Log(TAG, result);
-			JSONObject data = new JSONObject(result);
-			String ans = data.getString("result");
-			CRobotUtil.Log(TAG, ans);
+			HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
+			CRobotUtil.Log(TAG, JSONMapper.mapper.writeValueAsString(res));
+			String ans = res.result;
 
 			if (ans.equals("error")) {
 				sotawish.Say("エラーが起きたからもう一度聞くね");
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 			} else {
-				Store.dispatch(HabitQsState.class, action, data);
+				Store.dispatch(HabitQsState.class, action, res);
 				// 答えがあってるか確認するモードへ
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
 
 			}
 		} catch (Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
+			e.printStackTrace();
 			sotawish.Say("エラーが起きたからもう一度聞くね");
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 		}
 	}
 
-	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, ArrayList<JSONObject> result) {
+	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, PostHabitReq result) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -185,15 +194,15 @@ public class HabitQs {
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 				if (questionI == HabitQsState.QuestionI.EAT_SNACK) {
 					// お菓子食べてなかったら、お菓子の名前を聞くのはスキップ
-					String isEat = result.get(questionI.ordinal()).getString("result");
-					if (!isEat.equals("yes")) {
+					boolean isEat = result.eatSnack;
+					if (!isEat) {
 						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+2];
 					} else {
 						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+1];
 					}
-				} else if (questionI == HabitQsState.QuestionI.GETUP) {
+				} else if (questionI == HabitQsState.QuestionI.values()[HabitQsState.QuestionI.values().length - 1]) {
 					// 終了
-					questionI = HabitQsState.QuestionI.IS_EXERCISE;
+					questionI = HabitQsState.QuestionI.values()[0];
 					// <結果を送信>
 					if(!sendResult(result)) {
 						sotawish.Say("登録に失敗しました。");
@@ -219,37 +228,18 @@ public class HabitQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(ArrayList<JSONObject> result) {
+	private static boolean sendResult(PostHabitReq result) {
 	    boolean	isSuccess = false;
 		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 		// sotaと会話している人の名前を取得
 		ArrayList<User> fnResults = fnState.getResults();
 		String nickName = fnResults.get(fnResults.size() - 1).nickName;
-    	LifeHabit lifeHabit = new LifeHabit();
-        int sleepTime = Integer.parseInt(result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("result"));
-        int getUpTime = Integer.parseInt(result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("result"));
-        lifeHabit.setVal(
-        		sleepTime,
-        		getUpTime,
-        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("result").equals("yes"),
-        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("result").equals("yes"),
-        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("result").equals("yes"),
-        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("result").equals("yes"),
-        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("result"));
-        lifeHabit.setText(
-        		result.get(HabitQsState.QuestionI.SLEEP.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.GETUP.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.IS_EXERCISE.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.IS_DRINKING.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.EAT_BREAKFAST.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.EAT_SNACK.ordinal()).getString("text"),
-        		result.get(HabitQsState.QuestionI.SNACK_NAME.ordinal()).getString("text"));
+		result.nickName = nickName;
         try {
-	        String res = MyHttpCon.postHabit(nickName, lifeHabit);
-		 	JSONObject data = new JSONObject(res);
-		    boolean	success = data.getBoolean("success");
+	        PostHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postHabit(result), PostHabitRes.class);
+		    boolean	success = res.success;
 		 	if(success) {
-		 		CRobotUtil.Log(TAG, "success");
+		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;
 		 	}else {
 		 		CRobotUtil.Log(TAG, "登録失敗");

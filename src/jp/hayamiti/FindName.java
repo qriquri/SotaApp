@@ -41,7 +41,7 @@ public class FindName {
 				add(new FindNameState());
 				add(new YesOrNoState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);

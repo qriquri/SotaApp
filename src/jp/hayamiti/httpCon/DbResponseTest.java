@@ -5,7 +5,9 @@ import java.io.IOException;
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.DbCom.GetTodayHabitRes;
 import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
+import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionRes;
+import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.utils.MyLog;
 
@@ -35,7 +37,8 @@ public class DbResponseTest  {
 
 		try {
 			MyLog.info(TAG, "postHabit");
-			String response = MyHttpCon.postHabit("", new LifeHabit());
+			PostHabitReq req = new PostHabitReq();
+			String response = MyHttpCon.postHabit(req);
 			PostHabitRes res = JSONMapper.mapper.readValue(response, PostHabitRes.class);
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
@@ -45,7 +48,11 @@ public class DbResponseTest  {
 
 		try {
 			MyLog.info(TAG, "postCondition");
-			String response = MyHttpCon.postCondition("", "元気", "元気");
+			PostConditionReq req = new PostConditionReq();
+			req.nickName = "";
+			req.condition = "元気";
+			req.sentence = "元気";
+			String response = MyHttpCon.postCondition(req);
 			PostConditionRes res = JSONMapper.mapper.readValue(response, PostConditionRes.class);
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);

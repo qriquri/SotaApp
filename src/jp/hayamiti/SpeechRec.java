@@ -37,7 +37,7 @@ public class SpeechRec {
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);

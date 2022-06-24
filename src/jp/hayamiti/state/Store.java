@@ -19,7 +19,7 @@ public class Store {
 	 * ステートを束ねる
 	 * @param stateList
 	 */
-	public static void conbineState(ArrayList<State> stateList) {
+	public static void bind(ArrayList<State> stateList) {
     	for (int i = 0; i < stateList.size(); i++) {
     		stateMap.put(stateList.get(i).getClass(), stateList.get(i));
     	}
@@ -52,7 +52,7 @@ public class Store {
 		ArrayList<State> stateList = new ArrayList<State>(){{
 			add(new FindNameState());
 		}};
-		Store.conbineState(stateList);
+		Store.bind(stateList);
 
 		FindNameState fnState = (FindNameState) Store.getState(FindNameState.class);
 		fnState.dispatch(FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);

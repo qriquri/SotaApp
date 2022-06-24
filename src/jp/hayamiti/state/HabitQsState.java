@@ -1,10 +1,7 @@
 package jp.hayamiti.state;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.json.JSONObject;
-
+import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
+import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
 
 public class HabitQsState extends State {
@@ -51,7 +48,9 @@ public class HabitQsState extends State {
 	private Enum<Mode> mode = Mode.LISTEN_ANS;
 	// private int questionNum = IS_EXERCISE;
 	private Enum<QuestionI> questionI = QuestionI.IS_EXERCISE;
-	private ArrayList<JSONObject> result = new ArrayList<JSONObject>(Arrays.asList(null, null, null, null, null, null,null));
+//	private ArrayList<HabitQsRes> result = new ArrayList<HabitQsRes>(Arrays.asList(null, null, null, null, null, null,null));
+	private PostHabitReq result = new PostHabitReq();
+	private String conformText = ""; // Sotaが答えがあってるか確認するセリフに使う
 
 	@Override
 	public <T> void dispatch(Enum<?> action, T val){
@@ -63,9 +62,10 @@ public class HabitQsState extends State {
 			mode = (Mode) val;
 			break;
 		case RESET_RESULT:
-			String itemStr = "{\"result\": \"\", \"text\": \"\"}";
-			JSONObject item = new JSONObject(itemStr);
-			result = new ArrayList<JSONObject>(Arrays.asList(item, item, item, item, item, item, item));
+//			HabitQsRes item = new HabitQsRes();
+//			result = new ArrayList<HabitQsRes>(Arrays.asList(item, item, item, item, item, item, item));
+			result = new PostHabitReq();
+			conformText = "";
 			break;
 		// case SET_QUESTION_NUM:
 		// 	questionNum = (int) val;
@@ -74,25 +74,46 @@ public class HabitQsState extends State {
 			questionI = (QuestionI) val;
 			break;
 		case SET_EXERCISE_LISTEN_RESULT:
-			result.set(QuestionI.IS_EXERCISE.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.IS_EXERCISE.ordinal(), (HabitQsRes) val);
+			result.exercise = ((HabitQsRes) val).result.equals("yes");
+			result.exerciseT = ((HabitQsRes) val).text;
+			conformText = result.exercise ? "運動した" : "運動してない";
 			break;
 		case SET_DRINGKING_LISTEN_RESULT:
-			result.set(QuestionI.IS_DRINKING.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.IS_DRINKING.ordinal(), (HabitQsRes) val);
+			result.drinking = ((HabitQsRes) val).result.equals("yes");
+			result.drinkingT = ((HabitQsRes) val).text;
+			conformText = result.drinking ? "飲酒した" : "飲酒してない";
 			break;
 		case SET_EATBREAKFAST_LISTEN_RESULT:
-			result.set(QuestionI.EAT_BREAKFAST.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.EAT_BREAKFAST.ordinal(), (HabitQsRes) val);
+			result.eatBreakfast = ((HabitQsRes) val).result.equals("yes");
+			result.eatBreakfastT = ((HabitQsRes) val).text;
+			conformText = result.eatBreakfast ? "食べた" : "食べてない";
 			break;
 		case SET_EATSNACK_LISTEN_RESULT:
-			result.set(QuestionI.EAT_SNACK.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.EAT_SNACK.ordinal(), (HabitQsRes) val);
+			result.eatSnack = ((HabitQsRes) val).result.equals("yes");
+			result.eatSnackT = ((HabitQsRes) val).text;
+			conformText = result.eatSnack ? "食べた" : "食べてない";
 			break;
 		case SET_SNACKNAME_LISTEN_RESULT:
-			result.set(QuestionI.SNACK_NAME.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.SNACK_NAME.ordinal(), (HabitQsRes) val);
+			result.snackName = ((HabitQsRes) val).result;
+			result.snackNameT = ((HabitQsRes) val).text;
+			conformText = result.snackName;
 			break;
 		case SET_SLEEP_LISTEN_RESULT:
-			result.set(QuestionI.SLEEP.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.SLEEP.ordinal(), (HabitQsRes) val);
+			result.sleep = Integer.parseInt(((HabitQsRes) val).result);
+			result.sleepT = ((HabitQsRes) val).text;
+			conformText = result.sleep + "時";
 			break;
 		case SET_GETUP_LISTEN_RESULT:
-			result.set(QuestionI.GETUP.ordinal(), (JSONObject) val);
+//			result.set(QuestionI.GETUP.ordinal(), (HabitQsRes) val);
+			result.getUp = Integer.parseInt(((HabitQsRes) val).result);
+			result.getUpT = ((HabitQsRes) val).text;
+			conformText = result.getUp + "時";
 			break;
 		default:
 			break;
@@ -109,8 +130,11 @@ public class HabitQsState extends State {
 	public Enum<QuestionI> getQuestionI(){
 		return questionI;
 	}
-	public ArrayList<JSONObject> getResult(){
+	public PostHabitReq getResult(){
 		return result;
+	}
+	public String getConformText() {
+		return conformText;
 	}
 
 }

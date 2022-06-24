@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
+import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
@@ -42,7 +43,7 @@ public class ConditionQs {
 				add(new YesOrNoState());
 				add(new ConditionQsState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
@@ -171,10 +172,12 @@ public class ConditionQs {
 			// sotaと会話している人の名前を取得
 			ArrayList<User> fnResults = fnState.getResults();
 			String nickName = fnResults.get(fnResults.size() - 1).nickName;
-			String res = MyHttpCon.postCondition(nickName, result.result, result.text);
-//			JSONObject data = new JSONObject(res);
-			PostConditionRes resJ = JSONMapper.mapper.readValue(res, PostConditionRes.class);
-		    boolean	success = resJ.success;
+			PostConditionReq req = new PostConditionReq();
+			req.nickName = nickName;
+			req.sentence = result.text;
+			req.condition = result.result;
+			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
+		    boolean	success = res.success;
 		 	if(success) {
 		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;
