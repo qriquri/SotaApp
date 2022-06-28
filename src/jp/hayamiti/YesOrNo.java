@@ -1,10 +1,11 @@
 package jp.hayamiti;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -15,6 +16,7 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 public class YesOrNo {
 	static final String TAG = "YesOrNO";
 	static final String YES_OR_NO_REC_PATH = "./yes_or_no_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	/**
 	 * 名前聞き取り
 	 * @param pose
@@ -64,15 +66,18 @@ public class YesOrNo {
 
 	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
 		try {
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND, false);
 			// <録音>
 			mic.startRecording(YES_OR_NO_REC_PATH,3000);
 			mic.waitend();
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
 			String result = MyHttpCon.yesOrNo(YES_OR_NO_REC_PATH);
-			JSONObject data = new JSONObject(result);
 			CRobotUtil.Log(TAG, result);
-			String isYes =data.getString("result");
+			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
+			String isYes =res.getResult();
 			if(isYes.equals("yes")) {
         		Store.dispatch(YesOrNoState.class, YesOrNoState.Action.SET_ISYES, true);
         		Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENED_YES_OR_NO);

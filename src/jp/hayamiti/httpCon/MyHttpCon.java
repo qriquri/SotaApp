@@ -13,8 +13,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.DbCom.PostConditionReq;
+import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
 
 public class MyHttpCon {
@@ -149,50 +150,29 @@ public class MyHttpCon {
         return response;
     }
 
-    public static String postHabit(String nickName, LifeHabit lifeHabit) throws IOException{
+    public static String postHabit(PostHabitReq req) throws IOException{
     	String response = "{\"success\": false}";
-    	String url = DB_HOME + "/postHabit";
-    	String body = "{\"nickName\":\"" + nickName + "\""
-    					+",\"sleep\":" + lifeHabit.getSleep()
-		    			+ ",\"getUp\":" + lifeHabit.getGetUp()
-		    			+ ",\"exercise\":" + lifeHabit.getExercise()
-		    			+ ",\"drinking\":" + lifeHabit.getDrinking()
-		    			+ ",\"eatBreakfast\":" + lifeHabit.getEatBreakfast()
-		    			+ ",\"eatSnack\":" + lifeHabit.getEatSnack()
-		    			+ ",\"snackName\":\"" + lifeHabit.getSnackName()  + "\""
-    					+ ",\"sleepT\":\"" + lifeHabit.getTextList()[0] + "\""
-		    			+ ",\"getUpT\":\"" + lifeHabit.getTextList()[1] + "\""
-		    			+ ",\"exerciseT\":\"" + lifeHabit.getTextList()[2] + "\""
-		    			+ ",\"drinkingT\":\"" + lifeHabit.getTextList()[3]+ "\""
-		    			+ ",\"eatBreakfastT\":\"" + lifeHabit.getTextList()[4] + "\""
-		    			+ ",\"eatSnackT\":\"" + lifeHabit.getTextList()[5] + "\""
-		    			+ ",\"snackNameT\":\"" + lifeHabit.getTextList()[6] + "\""
-		    			+ "}";
     	try {
-    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
+	    	String url = DB_HOME + "/postHabit";
+	    	String body = JSONMapper.mapper.writeValueAsString(req);
     		response = sendJSON(body, url);
     	}catch(Exception e) {
     		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
-    		MyLog.error(LOG_TAG, "postHabit err " + body);
+
     	}finally {
 
     	}
     	return response;
     }
 
-    public static String postCondition(String nickName, String condition, String sentence) throws IOException{
+    public static String postCondition(PostConditionReq req) throws IOException{
     	String response = "{\"success\": false}";
-    	String url = DB_HOME + "/postCondition";
-    	String body = "{\"nickName\":\"" + nickName + "\""
-    					+ ",\"condition\":\"" + condition  + "\""
-    					+ ",\"sentence\":\"" + sentence + "\""
-		    			+ "}";
     	try {
-    		new JSONObject(body); // 一応ここでjsonエラーが出ないか確認する
+    		String url = DB_HOME + "/postCondition";
+    		String body = JSONMapper.mapper.writeValueAsString(req);
     		response = sendJSON(body, url);
     	}catch(Exception e) {
     		MyLog.error(LOG_TAG, "postCondition err " + e.toString());
-    		MyLog.error(LOG_TAG, "postConditiont err " + body);
     	}finally {
 
     	}

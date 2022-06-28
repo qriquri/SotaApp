@@ -2,13 +2,14 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.utils.MyLog;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -19,6 +20,7 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 public class SpeechRec {
 	static final String TAG = "SpeechRec";
 	static final String TEST_REC_PATH = "./test_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
@@ -37,7 +39,7 @@ public class SpeechRec {
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
@@ -93,6 +95,9 @@ public class SpeechRec {
 	 */
 	public static void recordARecogByHttp(CRecordMic mic) {
 		try {
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND,false);
 			// <録音>
 			mic.startRecording(TEST_REC_PATH,3000);
 			mic.waitend();
@@ -100,9 +105,10 @@ public class SpeechRec {
 			// </録音>
 			String result = MyHttpCon.speechRec(TEST_REC_PATH);
 			CRobotUtil.Log(TAG, result);
-			JSONObject data = new JSONObject(result);
-			MyLog.info(TAG,"get audio:" + data.getString("result"));
-            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, data.getString("result"));
+//			JSONObject data = new JSONObject(result);
+			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
+			MyLog.info(TAG,"get audio:" + res.getResult());
+            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, res.getResult());
 
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());

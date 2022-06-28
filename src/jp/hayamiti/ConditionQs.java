@@ -2,15 +2,19 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import org.json.JSONObject;
-
+import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
+import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
+import jp.hayamiti.httpCon.DbCom.PostConditionReq;
+import jp.hayamiti.httpCon.DbCom.PostConditionRes;
+import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -22,6 +26,7 @@ import jp.vstone.sotatalk.TextToSpeechSota;
 public class ConditionQs {
 	static final String TAG = "ConditionQs";
 	static final String REC_PATH = "./test_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
 	public static void main(String[] args) {
 		CRobotPose pose = null;
@@ -40,7 +45,7 @@ public class ConditionQs {
 				add(new YesOrNoState());
 				add(new ConditionQsState());
 			}};
-			Store.conbineState(stateList);
+			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
@@ -81,14 +86,14 @@ public class ConditionQs {
 		boolean isFinish = false;
 		ConditionQsState state = (ConditionQsState)Store.getState(ConditionQsState.class);
 		Enum<ConditionQsState.Mode> mode = state.getMode();
-		JSONObject result = state.getResult();
+		ConditionQsRes result = state.getResult();
 		if(mode == ConditionQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
 			recordARecogByHttp(mic, sotawish);
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(result.getString("text") + "、であってる?");
+			sotawish.Say(result.getText() + "、であってる?");
 			// モード更新
 			Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -104,7 +109,9 @@ public class ConditionQs {
 		try {
 			// 質問する
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("今日の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
-
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND, false);
 			// <録音>
 			mic.startRecording(REC_PATH, 5000);
 			mic.waitend();
@@ -113,15 +120,16 @@ public class ConditionQs {
 
 			String result = MyHttpCon.conditionQs(REC_PATH);
 			CRobotUtil.Log(TAG, result);
-			JSONObject data = new JSONObject(result);
-			String ans = data.getString("result");
+//			JSONObject data = new JSONObject(result);
+			ConditionQsRes res = JSONMapper.mapper.readValue(result, ConditionQsRes.class);
+			String ans = res.getResult();
 			CRobotUtil.Log(TAG, ans);
 
 			if (ans.equals("error")) {
 				sotawish.Say("エラーが起きたからもう一度聞くね");
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 			}else {
-				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.SET_LISTEN_RESULT, data);
+				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.SET_LISTEN_RESULT, res);
 				// 答えがあってるか確認するモードへ
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.CONFORM_ANS);
 			}
@@ -132,7 +140,7 @@ public class ConditionQs {
 		}
 	}
 
-	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, JSONObject result) {
+	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, ConditionQsRes result) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -161,16 +169,19 @@ public class ConditionQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(JSONObject result) {
+	private static boolean sendResult(ConditionQsRes result) {
 		boolean isSuccess = false;
 		try {
 			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 			// sotaと会話している人の名前を取得
-			ArrayList<JSONObject> fnResults = fnState.getResults();
-			String nickName = fnResults.get(fnResults.size() - 1).getString("nickName");
-			String res = MyHttpCon.postCondition(nickName, result.getString("result"), result.getString("text"));
-			JSONObject data = new JSONObject(res);
-		    boolean	success = data.getBoolean("success");
+			ArrayList<User> fnResults = fnState.getResults();
+			String nickName = fnResults.get(fnResults.size() - 1).getNickName();
+			PostConditionReq req = new PostConditionReq();
+			req.setNickName(nickName);
+			req.setSentence(result.getText());
+			req.setCondition(result.getResult());
+			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
+		    boolean	success = res.isSuccess();
 		 	if(success) {
 		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;

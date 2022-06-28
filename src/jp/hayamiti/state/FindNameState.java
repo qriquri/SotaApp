@@ -2,9 +2,7 @@ package jp.hayamiti.state;
 
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.utils.MyLog;
 
 public class FindNameState extends State {
@@ -33,12 +31,13 @@ public class FindNameState extends State {
     //</mode>
     //<state>
     private Enum<Mode> mode = Mode.LISTENNING_NAME;
-    private ArrayList<JSONObject> results = new ArrayList<JSONObject>(); // 確認済みの正しい結果
-    private JSONArray listenResults = new JSONArray(); // 聞き取っただけのまだ確認していない結果
+    private ArrayList<User> results = new ArrayList<User>(); // 確認済みの正しい結果
+    private ArrayList<User> listenResults = new ArrayList<User>(); // 聞き取っただけのまだ確認していない結果
     private int count = 0; // 名前確認の際に何番目の名前をチェックしているか
     private boolean isCollect = false;
     //</state>
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public <T> void dispatch(Enum<?> action, T val){
     	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
@@ -47,7 +46,7 @@ public class FindNameState extends State {
             	mode = (Mode) val;
             	break;
             case ADD_NAME:
-            	results.add((JSONObject) val);
+            	results.add((User) val);
             	break;
             case REMOVE_NAME:
             	results.remove((int) val);
@@ -56,7 +55,8 @@ public class FindNameState extends State {
             	isCollect = (boolean) val;
             	break;
             case SET_LISTEN_RESULT:
-            	listenResults = (JSONArray)val;
+            	listenResults = (ArrayList<User>)val;
+//            	MyLog.info(LOG_TAG, listenResults.get(0).furigana);
             	count=0;
             	break;
             case COUNT:
@@ -70,13 +70,13 @@ public class FindNameState extends State {
     public Enum<Mode> getMode() {
     	return mode;
     }
-    public ArrayList<JSONObject> getResults(){
+    public ArrayList<User> getResults(){
     	return results;
     }
     public boolean getIsCollect() {
     	return isCollect;
     }
-    public JSONArray getListenResults() {
+    public ArrayList<User> getListenResults() {
     	return listenResults;
     }
     public int getCount() {
