@@ -3,7 +3,25 @@ package jp.hayamiti.httpCon.DbCom;
 import jp.hayamiti.JSON.JACKSONObject;
 
 public class PostConditionReq extends JACKSONObject {
-	public String nickName;
-	public String condition;
-	public String sentence;
+	private String nickName;
+	private String condition;
+	private String sentence;
+	public String getNickName() {
+		return nickName;
+	}
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
+	}
+	public String getCondition() {
+		return condition;
+	}
+	public void setCondition(String condition) {
+		this.condition = condition;
+	}
+	public String getSentence() {
+		return sentence;
+	}
+	public void setSentence(String sentence) {
+		this.sentence = sentence;
+	}
 }

@@ -1,7 +1,8 @@
 package jp.hayamiti.httpCon.DbCom;
 
-public class PostHabitReq {
+public class GetTodayHabitResult{
 	private String nickName;
+	private long date;
 	private int sleep;
 	private int getUp;
 	private boolean exercise;
@@ -9,18 +10,20 @@ public class PostHabitReq {
 	private boolean eatBreakfast;
 	private boolean eatSnack;
 	private String snackName;
-	private String sleepT;
-	private String getUpT;
-	private String exerciseT;
-	private String drinkingT;
-	private String eatBreakfastT;
-	private String eatSnackT;
-	private String snackNameT;
+	private int year;
+	private int month;
+	private int day;
 	public String getNickName() {
 		return nickName;
 	}
 	public void setNickName(String nickName) {
 		this.nickName = nickName;
+	}
+	public long getDate() {
+		return date;
+	}
+	public void setDate(long date) {
+		this.date = date;
 	}
 	public int getSleep() {
 		return sleep;
@@ -64,46 +67,22 @@ public class PostHabitReq {
 	public void setSnackName(String snackName) {
 		this.snackName = snackName;
 	}
-	public String getSleepT() {
-		return sleepT;
+	public int getYear() {
+		return year;
 	}
-	public void setSleepT(String sleepT) {
-		this.sleepT = sleepT;
+	public void setYear(int year) {
+		this.year = year;
 	}
-	public String getGetUpT() {
-		return getUpT;
+	public int getMonth() {
+		return month;
 	}
-	public void setGetUpT(String getUpT) {
-		this.getUpT = getUpT;
+	public void setMonth(int month) {
+		this.month = month;
 	}
-	public String getExerciseT() {
-		return exerciseT;
+	public int getDay() {
+		return day;
 	}
-	public void setExerciseT(String exerciseT) {
-		this.exerciseT = exerciseT;
-	}
-	public String getDrinkingT() {
-		return drinkingT;
-	}
-	public void setDrinkingT(String drinkingT) {
-		this.drinkingT = drinkingT;
-	}
-	public String getEatBreakfastT() {
-		return eatBreakfastT;
-	}
-	public void setEatBreakfastT(String eatBreakfastT) {
-		this.eatBreakfastT = eatBreakfastT;
-	}
-	public String getEatSnackT() {
-		return eatSnackT;
-	}
-	public void setEatSnackT(String eatSnackT) {
-		this.eatSnackT = eatSnackT;
-	}
-	public String getSnackNameT() {
-		return snackNameT;
-	}
-	public void setSnackNameT(String snackNameT) {
-		this.snackNameT = snackNameT;
+	public void setDay(int day) {
+		this.day = day;
 	}
 }

@@ -13,6 +13,7 @@ import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -25,6 +26,7 @@ public class FindName {
 	static final String TAG = "FindNmae";
 	static final String TEST_REC_PATH = "./test_rec.wav";
 	static final String FIND_NAME_REC_PATH = "./find_name.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
@@ -69,7 +71,7 @@ public class FindName {
 						if(results.size() > 0) {
 							ArrayList<String> names = new ArrayList<String>();
 							for(int i = 0; i < results.size(); i++) {
-								names.add(results.get(i).furigana);
+								names.add(results.get(i).getFurigana());
 							}
 							String nameList = nameConnection(names);
 							sotawish.Say(nameList+",何か話して");
@@ -98,7 +100,7 @@ public class FindName {
 								if(results.size() > 0) {
 									ArrayList<String> names = new ArrayList<String>();
 									for(int i = 0; i < results.size(); i++) {
-										names.add(results.get(i).furigana);
+										names.add(results.get(i).getFurigana());
 									}
 									String nameList = nameConnection(names);
 									sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
@@ -236,6 +238,9 @@ public class FindName {
 		try {
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
 
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND, false);
 			// <録音>
 			mic.startRecording(FIND_NAME_REC_PATH,3000);
 			mic.waitend();
@@ -246,7 +251,7 @@ public class FindName {
 			CRobotUtil.Log(TAG, result);
 //			JSONObject data = new JSONObject(result);
 			NameRecRes res = JSONMapper.mapper.readValue(result, NameRecRes.class);
-			String nameKana = res.result;
+			String nameKana = res.getResult();
 			CRobotUtil.Log(TAG, nameKana);
 
 			//</名前認識>
@@ -255,13 +260,13 @@ public class FindName {
 			CRobotUtil.Log(TAG, result);
 //			JSONObject userNames = new JSONObject(result);
 			GetUserNamesRes res2 = JSONMapper.mapper.readValue(result, GetUserNamesRes.class);
-			Boolean err = res2.err;
+			Boolean err = res2.isErr();
 			if(err) {
 				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);
 			}else {
 
 	    		// 追加する
-	        	Store.dispatch(FindNameState.class, FindNameState.Action.SET_LISTEN_RESULT, res2.users);
+	        	Store.dispatch(FindNameState.class, FindNameState.Action.SET_LISTEN_RESULT, res2.getUsers());
 	            Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.CONFORM_NAME);
 			}
 			//</データベースからユーザー情報を取得>
@@ -275,12 +280,12 @@ public class FindName {
 		CRobotUtil.Log(TAG,"データベースに登録されていた数" + (listenResults.size()));
 		MyLog.info(TAG, "count = "+count);
 		String newName = "";
-		if(listenResults.get(count).isRegistered) {
+		if(listenResults.get(count).getIsRegistered()) {
 			// 登録済みならニックネームで呼ぶ
-			newName = listenResults.get(count).nickName;
+			newName = listenResults.get(count).getNickName();
 		}else {
 			// 未登録な名前で呼ぶ
-			newName = listenResults.get(count).furigana;
+			newName = listenResults.get(count).getFurigana();
 		}
 		sotawish.Say(newName +"さん,で合ってる?");
 		// モード更新
@@ -349,8 +354,8 @@ public class FindName {
 
 	private static boolean findedName(MotionAsSotaWish sotawish, ArrayList<User> results) {
 		CRobotUtil.Log(TAG,"数" + (results.size()));
-		String newName = results.get(results.size()-1).furigana;
-		boolean isRegistered = results.get(results.size()-1).isRegistered;
+		String newName = results.get(results.size()-1).getFurigana();
+		boolean isRegistered = results.get(results.size()-1).getIsRegistered();
 		if(isRegistered) {
 			// すでに記憶済みの名前の時
 			CRobotUtil.Log(TAG, newName);

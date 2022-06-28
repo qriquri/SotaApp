@@ -9,6 +9,7 @@ import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.utils.MyLog;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -19,6 +20,7 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 public class SpeechRec {
 	static final String TAG = "SpeechRec";
 	static final String TEST_REC_PATH = "./test_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
@@ -93,6 +95,9 @@ public class SpeechRec {
 	 */
 	public static void recordARecogByHttp(CRecordMic mic) {
 		try {
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND,false);
 			// <録音>
 			mic.startRecording(TEST_REC_PATH,3000);
 			mic.waitend();
@@ -102,8 +107,8 @@ public class SpeechRec {
 			CRobotUtil.Log(TAG, result);
 //			JSONObject data = new JSONObject(result);
 			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
-			MyLog.info(TAG,"get audio:" + res.result);
-            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, res.result);
+			MyLog.info(TAG,"get audio:" + res.getResult());
+            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, res.getResult());
 
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());

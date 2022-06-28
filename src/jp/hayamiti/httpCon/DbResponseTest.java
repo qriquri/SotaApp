@@ -38,6 +38,7 @@ public class DbResponseTest  {
 		try {
 			MyLog.info(TAG, "postHabit");
 			PostHabitReq req = new PostHabitReq();
+			MyLog.info(TAG, JSONMapper.mapper.writeValueAsString(req));
 			String response = MyHttpCon.postHabit(req);
 			PostHabitRes res = JSONMapper.mapper.readValue(response, PostHabitRes.class);
 			String json = JSONMapper.mapper.writeValueAsString(res);
@@ -49,9 +50,10 @@ public class DbResponseTest  {
 		try {
 			MyLog.info(TAG, "postCondition");
 			PostConditionReq req = new PostConditionReq();
-			req.nickName = "";
-			req.condition = "元気";
-			req.sentence = "元気";
+			req.setNickName("");
+			req.setCondition("元気");
+			req.setSentence("元気");
+			MyLog.info(TAG, JSONMapper.mapper.writeValueAsString(req));
 			String response = MyHttpCon.postCondition(req);
 			PostConditionRes res = JSONMapper.mapper.readValue(response, PostConditionRes.class);
 			String json = JSONMapper.mapper.writeValueAsString(res);

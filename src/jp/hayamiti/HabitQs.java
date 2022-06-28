@@ -16,6 +16,7 @@ import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -27,6 +28,7 @@ import jp.vstone.sotatalk.TextToSpeechSota;
 public class HabitQs {
 	static final String TAG = "HabitQs";
 	static final String REC_PATH = "./test_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
 	public static void main(String[] args) {
 		MyLog.info(TAG, "test");
@@ -36,14 +38,14 @@ public class HabitQs {
 		Store.bind(stateList);
 		// int count = HabitQsState.IS_EXERCISE;
 		HabitQsRes yesNoAns = new HabitQsRes();
-		yesNoAns.result = "no";
-		yesNoAns.text = "してない";
+		yesNoAns.setResult("no");
+		yesNoAns.setText("してない");
 		HabitQsRes timeAns = new HabitQsRes();
-		timeAns.result = "7";
-		timeAns.text = "7時";
+		timeAns.setResult("7");
+		timeAns.setText("7時");
 		HabitQsRes textAns = new HabitQsRes();
-		textAns.result = "チョコレート ポテトチップス";
-		textAns.text = "チョコレートと ポテトチップス食べた";
+		textAns.setResult("チョコレート ポテトチップス");
+		textAns.setText("チョコレートと ポテトチップス食べた");
 		Enum<HabitQsState.QuestionI>[] questionI = HabitQsState.QuestionI.values();
 		for (Enum<HabitQsState.QuestionI> i : questionI) {
 			switch ((HabitQsState.QuestionI)i) {
@@ -154,7 +156,9 @@ public class HabitQs {
 
 			// 質問する
 			sotawish.SayFile(TextToSpeechSota.getTTSFile(question), MotionAsSotaWish.MOTION_TYPE_CALL);
-
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND, false);
 			// <録音>
 			mic.startRecording(REC_PATH, 3000);
 			mic.waitend();
@@ -165,7 +169,7 @@ public class HabitQs {
 			String result = MyHttpCon.habitQs(REC_PATH, type);
 			HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
 			CRobotUtil.Log(TAG, JSONMapper.mapper.writeValueAsString(res));
-			String ans = res.result;
+			String ans = res.getResult();
 
 			if (ans.equals("error")) {
 				sotawish.Say("エラーが起きたからもう一度聞くね");
@@ -194,7 +198,7 @@ public class HabitQs {
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 				if (questionI == HabitQsState.QuestionI.EAT_SNACK) {
 					// お菓子食べてなかったら、お菓子の名前を聞くのはスキップ
-					boolean isEat = result.eatSnack;
+					boolean isEat = result.isEatSnack();
 					if (!isEat) {
 						questionI = HabitQsState.QuestionI.values()[questionI.ordinal()+2];
 					} else {
@@ -233,11 +237,11 @@ public class HabitQs {
 		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 		// sotaと会話している人の名前を取得
 		ArrayList<User> fnResults = fnState.getResults();
-		String nickName = fnResults.get(fnResults.size() - 1).nickName;
-		result.nickName = nickName;
+		String nickName = fnResults.get(fnResults.size() - 1).getNickName();
+		result.setNickName(nickName);
         try {
 	        PostHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postHabit(result), PostHabitRes.class);
-		    boolean	success = res.success;
+		    boolean	success = res.isSuccess();
 		 	if(success) {
 		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;

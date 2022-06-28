@@ -14,6 +14,7 @@ import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
+import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -25,6 +26,7 @@ import jp.vstone.sotatalk.TextToSpeechSota;
 public class ConditionQs {
 	static final String TAG = "ConditionQs";
 	static final String REC_PATH = "./test_rec.wav";
+	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
 	public static void main(String[] args) {
 		CRobotPose pose = null;
@@ -91,7 +93,7 @@ public class ConditionQs {
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(result.text + "、であってる?");
+			sotawish.Say(result.getText() + "、であってる?");
 			// モード更新
 			Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -107,7 +109,9 @@ public class ConditionQs {
 		try {
 			// 質問する
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("今日の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
-
+			//音声ファイル再生
+			//raw　Waveファイルのみ対応
+			CPlayWave.PlayWave(REC_START_SOUND, false);
 			// <録音>
 			mic.startRecording(REC_PATH, 5000);
 			mic.waitend();
@@ -118,7 +122,7 @@ public class ConditionQs {
 			CRobotUtil.Log(TAG, result);
 //			JSONObject data = new JSONObject(result);
 			ConditionQsRes res = JSONMapper.mapper.readValue(result, ConditionQsRes.class);
-			String ans = res.result;
+			String ans = res.getResult();
 			CRobotUtil.Log(TAG, ans);
 
 			if (ans.equals("error")) {
@@ -171,13 +175,13 @@ public class ConditionQs {
 			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 			// sotaと会話している人の名前を取得
 			ArrayList<User> fnResults = fnState.getResults();
-			String nickName = fnResults.get(fnResults.size() - 1).nickName;
+			String nickName = fnResults.get(fnResults.size() - 1).getNickName();
 			PostConditionReq req = new PostConditionReq();
-			req.nickName = nickName;
-			req.sentence = result.text;
-			req.condition = result.result;
+			req.setNickName(nickName);
+			req.setSentence(result.getText());
+			req.setCondition(result.getResult());
 			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
-		    boolean	success = res.success;
+		    boolean	success = res.isSuccess();
 		 	if(success) {
 		 		CRobotUtil.Log(TAG, "登録成功");
 		 		isSuccess = true;

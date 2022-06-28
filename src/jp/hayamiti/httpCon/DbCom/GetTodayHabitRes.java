@@ -3,20 +3,18 @@ package jp.hayamiti.httpCon.DbCom;
 import jp.hayamiti.JSON.JACKSONObject;
 
 public class GetTodayHabitRes extends JACKSONObject{
-	public class GetTodayHabitResult{
-		public String nickName;
-		public long date;
-		public int sleep;
-		public int getUp;
-		public boolean exercise;
-		public boolean drinking;
-		public boolean eatBreakfast;
-		public boolean eatSnack;
-		public String snackName;
-		public int year;
-		public int month;
-		public int day;
+	private GetTodayHabitResult result;
+	private boolean success;
+	public GetTodayHabitResult getResult() {
+		return result;
 	}
-	public GetTodayHabitResult result;
-	public boolean success;
+	public void setResult(GetTodayHabitResult result) {
+		this.result = result;
+	}
+	public boolean isSuccess() {
+		return success;
+	}
+	public void setSuccess(boolean success) {
+		this.success = success;
+	}
 }

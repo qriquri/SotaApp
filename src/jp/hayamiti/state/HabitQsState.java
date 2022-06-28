@@ -75,45 +75,45 @@ public class HabitQsState extends State {
 			break;
 		case SET_EXERCISE_LISTEN_RESULT:
 //			result.set(QuestionI.IS_EXERCISE.ordinal(), (HabitQsRes) val);
-			result.exercise = ((HabitQsRes) val).result.equals("yes");
-			result.exerciseT = ((HabitQsRes) val).text;
-			conformText = result.exercise ? "運動した" : "運動してない";
+			result.setExercise(((HabitQsRes) val).getResult().equals("yes"));
+			result.setExerciseT(((HabitQsRes) val).getText());
+			conformText = result.isExercise() ? "運動した" : "運動してない";
 			break;
 		case SET_DRINGKING_LISTEN_RESULT:
 //			result.set(QuestionI.IS_DRINKING.ordinal(), (HabitQsRes) val);
-			result.drinking = ((HabitQsRes) val).result.equals("yes");
-			result.drinkingT = ((HabitQsRes) val).text;
-			conformText = result.drinking ? "飲酒した" : "飲酒してない";
+			result.setDrinking(((HabitQsRes) val).getResult().equals("yes"));
+			result.setDrinkingT(((HabitQsRes) val).getText());
+			conformText = result.isDrinking() ? "飲酒した" : "飲酒してない";
 			break;
 		case SET_EATBREAKFAST_LISTEN_RESULT:
 //			result.set(QuestionI.EAT_BREAKFAST.ordinal(), (HabitQsRes) val);
-			result.eatBreakfast = ((HabitQsRes) val).result.equals("yes");
-			result.eatBreakfastT = ((HabitQsRes) val).text;
-			conformText = result.eatBreakfast ? "食べた" : "食べてない";
+			result.setEatBreakfast(((HabitQsRes) val).getResult().equals("yes"));
+			result.setEatBreakfastT(((HabitQsRes) val).getText());
+			conformText = result.isEatBreakfast() ? "食べた" : "食べてない";
 			break;
 		case SET_EATSNACK_LISTEN_RESULT:
 //			result.set(QuestionI.EAT_SNACK.ordinal(), (HabitQsRes) val);
-			result.eatSnack = ((HabitQsRes) val).result.equals("yes");
-			result.eatSnackT = ((HabitQsRes) val).text;
-			conformText = result.eatSnack ? "食べた" : "食べてない";
+			result.setEatSnack(((HabitQsRes) val).getResult().equals("yes"));
+			result.setEatSnackT(((HabitQsRes) val).getText());
+			conformText = result.isEatSnack() ? "食べた" : "食べてない";
 			break;
 		case SET_SNACKNAME_LISTEN_RESULT:
 //			result.set(QuestionI.SNACK_NAME.ordinal(), (HabitQsRes) val);
-			result.snackName = ((HabitQsRes) val).result;
-			result.snackNameT = ((HabitQsRes) val).text;
-			conformText = result.snackName;
+			result.setSnackName(((HabitQsRes) val).getResult());
+			result.setSnackNameT(((HabitQsRes) val).getText());
+			conformText = result.getSnackName();
 			break;
 		case SET_SLEEP_LISTEN_RESULT:
 //			result.set(QuestionI.SLEEP.ordinal(), (HabitQsRes) val);
-			result.sleep = Integer.parseInt(((HabitQsRes) val).result);
-			result.sleepT = ((HabitQsRes) val).text;
-			conformText = result.sleep + "時";
+			result.setSleep(Integer.parseInt(((HabitQsRes) val).getResult()));
+			result.setSleepT(((HabitQsRes) val).getText());
+			conformText = result.getSleep() + "時";
 			break;
 		case SET_GETUP_LISTEN_RESULT:
 //			result.set(QuestionI.GETUP.ordinal(), (HabitQsRes) val);
-			result.getUp = Integer.parseInt(((HabitQsRes) val).result);
-			result.getUpT = ((HabitQsRes) val).text;
-			conformText = result.getUp + "時";
+			result.setGetUp(Integer.parseInt(((HabitQsRes) val).getResult()));
+			result.setGetUpT(((HabitQsRes) val).getText());
+			conformText = result.getGetUp() + "時";
 			break;
 		default:
 			break;

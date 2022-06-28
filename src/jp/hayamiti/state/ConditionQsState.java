@@ -33,8 +33,8 @@ public class ConditionQsState extends State {
 			break;
 		case RESET_RESULT:
 //			String itemStr = "{\"result\": \"\", \"text\": \"\"}";
-			result.result = "";
-			result.text = "";
+			result.setResult("");
+			result.setText("");
 			break;
 		case SET_LISTEN_RESULT:
 			result = (ConditionQsRes)val;
