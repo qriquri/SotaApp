@@ -95,6 +95,20 @@ public class MyHttpCon {
     }
 
     /**
+     * 日にち認識（n日のnを取得する）
+     * @param filename
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static String dayRec(String filename) throws IOException {
+    	String response = "{\"success\": false}";
+        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis();
+        response = uploadFile(filename, url);
+        return response;
+    }
+
+    /**
      * yesNo判定
      * @param filename
      * @return

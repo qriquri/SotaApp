@@ -164,7 +164,7 @@ public class FindName {
 		boolean isFind = false;
 		if(mode == FindNameState.Mode.LISTENNING_NAME) {
 			// 聞き取り
-			recordForFindNameByHttp(mic, sotawish);
+			recordARecByHttp(mic, sotawish);
 		}else if(mode == FindNameState.Mode.CONFORM_NAME) {
 			// 名前が合ってるか確認
 			conformName(sotawish, count, listenResults);
@@ -234,7 +234,7 @@ public class FindName {
 //		}
 //	}
 
-	private static void recordForFindNameByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARecByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
 		try {
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
 
