@@ -164,6 +164,23 @@ public class MyHttpCon {
         return response;
     }
 
+    /**
+     * 例えば3日前から7日前までなら、start=3, end = 7にする
+     * @param nickName
+     * @param isSota
+     * @param start 何日前から
+     * @param end   何日前まで
+     * @return
+     * @throws IOException
+     */
+    public static String getHabits(String nickName, boolean isSota, int start, int end) throws IOException {
+        String response = "{\"success\": false}";
+        String encodeName = URLEncoder.encode(nickName,"UTF-8");
+        String url = DB_HOME + "/getHabits?nickName="+encodeName+"&isSota="+isSota+"&start="+start+"&end="+end;
+        response = createGetReq(url);
+         return response;
+     }
+
     public static String postHabit(PostHabitReq req) throws IOException{
     	String response = "{\"success\": false}";
     	try {

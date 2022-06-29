@@ -38,8 +38,11 @@ public class DayQs {
 			int backDay = state.getResult();
 			if(backDay == 0) {
 				sotawish.Say("今日であってる？");
-			}else {
-				sotawish.Say(backDay + "日であってる？");
+			}else if (backDay == 1) {
+				sotawish.Say("昨日であってる？");
+			}
+			else {
+				sotawish.Say(backDay + "日前であってる？");
 			}
 			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.WAIT_CONFORM);
 		}else if(mode == DayQsState.Mode.WAIT_CONFORM) {
@@ -50,7 +53,7 @@ public class DayQs {
 
 	private static void recordARecByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
 		try {
-			sotawish.SayFile(TextToSpeechSota.getTTSFile("何日前から登録する？"),MotionAsSotaWish.MOTION_TYPE_CALL);
+			sotawish.SayFile(TextToSpeechSota.getTTSFile("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。"),MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
@@ -64,6 +67,12 @@ public class DayQs {
 			CRobotUtil.Log(TAG, result);
 			DayQsRes res = JSONMapper.mapper.readValue(result, DayQsRes.class);
 			String ans = res.getResult();
+			String text = res.getText();
+			if(text.contains("おわり") || text.contains("終わり")){
+				// 終了させる
+				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+				return;
+			}
 			CRobotUtil.Log(TAG, ans);
 			if(ans.equals("error")) {
 				sotawish.Say("エラーが起きたからもう一度聞くね");

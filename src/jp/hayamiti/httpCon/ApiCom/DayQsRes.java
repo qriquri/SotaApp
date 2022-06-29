@@ -5,6 +5,7 @@ import jp.hayamiti.JSON.JACKSONObject;
 public class DayQsRes extends JACKSONObject {
 	private long sendTime;
 	private String result;
+	private String text;
 	public long getSendTime() {
 		return sendTime;
 	}
@@ -16,5 +17,11 @@ public class DayQsRes extends JACKSONObject {
 	}
 	public void setResult(String result) {
 		this.result = result;
+	}
+	public String getText() {
+		return text;
+	}
+	public void setText(String text) {
+		this.text = text;
 	}
 }

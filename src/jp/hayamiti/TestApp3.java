@@ -11,6 +11,7 @@ import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
+import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
@@ -26,7 +27,7 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class TestApp2 {
+public class TestApp3 {
 	static final String TAG = "TestApp2";
 	static final String START_SOUND = "sound/mao-damasi-system04.wav";
 	public static void main(String[] args) {
@@ -55,16 +56,18 @@ public class TestApp2 {
 				add(new YesOrNoState());
 				add(new HabitQsState());
 				add(new ConditionQsState());
+				add(new DayQsState());
 			}};
 			Store.bind(stateList);
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
 			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
+			DayQsState dayQsState = (DayQsState)Store.getState(DayQsState.class);
 			// </stateの取得>
 			// sotaのモードを取得
 			Enum<SotaState.Mode> mode = sotaState.getMode();
 			// sotaと会話している人の名前を取得
-			ArrayList<User> results = findNameState.getResults();
+			ArrayList<User> fnResults = findNameState.getResults();
 			if(mem.Connect()){
 				//Sota仕様にVSMDを初期化
 				motion.InitRobot_Sota();
@@ -78,6 +81,7 @@ public class TestApp2 {
 				GamingLED.on(pose, mem, motion);
 				// sotaのモードをlisteningに変化
 				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+				CRobotUtil.wait(1000);
 				// sotaに待機モーションをさせる
 				sotawish.StartIdling();
 				while(true){
@@ -94,65 +98,42 @@ public class TestApp2 {
 				        // <話しかけられるのを待つ>
 					}else if(mode == SotaState.Mode.JUDDGING){
 						// <LISTENINGモードで聞き取った音声の判定>
-						String recordResult = sotaState.getSpRecResult();
-						if(recordResult != ""){
-							sotawish.StopIdling();
-							// <聞き取った内容に応じて処理する>
-							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
-								if(results.size() > 0) {
-									ArrayList<String> names = new ArrayList<String>();
-									for(int i = 0; i < results.size(); i++) {
-										names.add(results.get(i).getFurigana());
-									}
-									String nameList = FindName.nameConnection(names);
-									sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
-									final int nameNum = names.size();
-									// 名前削除
-									for(int i = 0; i < nameNum; i++) {
-										// リストは消すと減っていくから、先頭を常に消す
-										Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
-									}
-									MyLog.info(TAG, "名前の数"+ findNameState.getResults());
-								}else {
-									sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
-								}
-								break;
-							}else if((recordResult.contains("おはよう") || recordResult.contains("こんにちは") || recordResult.contains("こんばんは")) && results.size() == 0) {
-								// モード更新
-								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIND_NAME);
-							}else {
-								// モード更新
-								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
-							}
-							// </聞き取った内容に応じて処理する>
-						}else {
-							// モード更新
-							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
-						}
+						boolean isFinish = juddging(sotawish,sotaState, findNameState,fnResults);
+						if(isFinish) {
+							break;
+						};
 						// </LISTENINGモードで聞き取った音声の判定>
 					}else if(mode == SotaState.Mode.FIND_NAME) {
 						// <名前聞き取り>
 						boolean isFind = FindName.findName(pose, mem, motion, sotawish, mic);
 						if(isFind) {
-							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.CONFORM_ALEADY_LISTENED);
+							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
 						}
 						// </名前聞き取り>
+					}else if(mode == SotaState.Mode.LISTEN_BACK_DAY) {
+						if(DayQs.dayQs(pose, mem, motion, sotawish, mic)) {
+						// モード更新
+						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.CONFORM_ALEADY_LISTENED);
+
+						}
 					}else if(mode == SotaState.Mode.CONFORM_ALEADY_LISTENED) {
 						// <すでに質問済みかを確認する>
-						String nickName = results.get(results.size()-1).getNickName();
+						String nickName = fnResults.get(fnResults.size()-1).getNickName();
+						int backDay = dayQsState.getResult();
 						if(nickName.equals("")) {
 							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 						}else {
-							String res = MyHttpCon.getTodayHabit(nickName, true);
+							String res = MyHttpCon.getHabits(nickName, true, backDay, backDay);
 							JSONObject data = new JSONObject(res);
 							Boolean success = data.getBoolean("success");
+							String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 							if(success) {
 								// 質問は一日一回
-								sotawish.Say("今日はもう聞いたみたいだから、終了するよ");
-								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+								sotawish.Say(relativeToday + "はもう聞いたみたいだよ");
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
 							}else {
 								// まだ質問してない場合、質問する
-								sotawish.Say("今日はまだ聞いてないみたいだから、いくつか質問するよ");
+								sotawish.Say(relativeToday + "はまだ聞いてないみたいだから、いくつか質問するよ");
 								// 質問結果をリセット
 								Store.dispatch(HabitQsState.class, HabitQsState.Action.RESET_RESULT, null);
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
@@ -162,7 +143,8 @@ public class TestApp2 {
 					}else if(mode == SotaState.Mode.LISTEN_HABIT) {
 						// <生活習慣を聞き出す>
 //						String nickName = results.get(results.size()-1).getString("nickName");
-						if( HabitQs.habitQs(pose, mem, motion, sotawish, mic, 0)) {
+						int backDay = dayQsState.getResult();
+						if( HabitQs.habitQs(pose, mem, motion, sotawish, mic, backDay)) {
 							// 質問が終わったら
 						 	// モード更新
 							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_CONDITION);
@@ -170,13 +152,14 @@ public class TestApp2 {
 						// </生活習慣を聞き出す>
 					}else if(mode == SotaState.Mode.LISTEN_CONDITION) {
 						// 体調を聞き出す
-						if(ConditionQs.conditionQs(pose, mem, motion, sotawish, mic, 0)) {
-							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+						int backDay = dayQsState.getResult();
+						if(ConditionQs.conditionQs(pose, mem, motion, sotawish, mic, backDay)) {
+							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
 						}
 					}else if(mode == SotaState.Mode.FIN) {
 						// 聞き取り終了
-						sotawish.Say("今日の質問はこれで終わり。");
-						String nameList = results.get(0).getFurigana();
+						sotawish.Say("質問はこれで終わり。");
+						String nameList = fnResults.get(0).getFurigana();
 						// </sotaが認識した名前を繋げる>
 						sotawish.Say(nameList + "さん,さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
 						// 名前削除
@@ -200,5 +183,44 @@ public class TestApp2 {
 			 //サーボモータのトルクオフ
 			  motion.ServoOff();
 		}
+	}
+
+	private static boolean juddging(MotionAsSotaWish sotawish, SotaState sotaState,  FindNameState findNameState,ArrayList<User> fnResults) {
+		String recordResult = sotaState.getSpRecResult();
+		if(recordResult != ""){
+			sotawish.StopIdling();
+			// <聞き取った内容に応じて処理する>
+			if(recordResult.contains("おわり") || recordResult.contains("終わり")){
+				if(fnResults.size() > 0) {
+					ArrayList<String> names = new ArrayList<String>();
+					for(int i = 0; i < fnResults.size(); i++) {
+						names.add(fnResults.get(i).getFurigana());
+					}
+					String nameList = FindName.nameConnection(names);
+					sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
+					final int nameNum = names.size();
+					// 名前削除
+					for(int i = 0; i < nameNum; i++) {
+						// リストは消すと減っていくから、先頭を常に消す
+						Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
+					}
+					MyLog.info(TAG, "名前の数"+ findNameState.getResults());
+				}else {
+					sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
+				}
+				return true;
+			}else if((recordResult.contains("おはよう") || recordResult.contains("こんにちは") || recordResult.contains("こんばんは")) && fnResults.size() == 0) {
+				// モード更新
+				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIND_NAME);
+			}else {
+				// モード更新
+				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+			}
+			// </聞き取った内容に応じて処理する>
+		}else {
+			// モード更新
+			Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+		}
+		return false;
 	}
 }

@@ -64,7 +64,7 @@ public class ConditionQs {
 				while(true){
 					// モード取得
 					mode = sotaState.getMode();
-					if(conditionQs(pose, mem, motion, sotawish, mic)) {
+					if(conditionQs(pose, mem, motion, sotawish, mic, 0)) {
 						sotawish.Say("終了するよ");
 						break;
 					}
@@ -82,14 +82,14 @@ public class ConditionQs {
 	}
 
 
-	public static boolean conditionQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	public static boolean conditionQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int backDay) {
 		boolean isFinish = false;
 		ConditionQsState state = (ConditionQsState)Store.getState(ConditionQsState.class);
 		Enum<ConditionQsState.Mode> mode = state.getMode();
 		ConditionQsRes result = state.getResult();
 		if(mode == ConditionQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
-			recordARecogByHttp(mic, sotawish);
+			recordARecogByHttp(mic, sotawish, backDay);
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
@@ -99,16 +99,17 @@ public class ConditionQs {
 			// </答えを確認>
 		}else if (mode == ConditionQsState.Mode.WAIT_CONFORM_ANS) {
 			// <確認待機>
-			isFinish = waitConform(pose, mem, motion, sotawish, mic, result);
+			isFinish = waitConform(pose, mem, motion, sotawish, mic, result, backDay);
 			// </確認待機>
 		}
 		return isFinish;
 	}
 
-	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish, int backDay) {
 		try {
+			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 			// 質問する
-			sotawish.SayFile(TextToSpeechSota.getTTSFile("今日の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
+			sotawish.SayFile(TextToSpeechSota.getTTSFile(relativeToday + "の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
 			CPlayWave.PlayWave(REC_START_SOUND, false);
@@ -140,7 +141,7 @@ public class ConditionQs {
 		}
 	}
 
-	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, ConditionQsRes result) {
+	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, ConditionQsRes result, int backDay) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -149,7 +150,7 @@ public class ConditionQs {
 				// モード更新
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 				// <結果を送信>
-				if(!sendResult(result)) {
+				if(!sendResult(result, backDay)) {
 					sotawish.Say("送信に失敗したよ。");
 				}
 				// </結果を送信>
@@ -169,7 +170,7 @@ public class ConditionQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(ConditionQsRes result) {
+	private static boolean sendResult(ConditionQsRes result, int backDay) {
 		boolean isSuccess = false;
 		try {
 			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
@@ -180,6 +181,7 @@ public class ConditionQs {
 			req.setNickName(nickName);
 			req.setSentence(result.getText());
 			req.setCondition(result.getResult());
+			req.setBackDay(backDay);
 			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
 		    boolean	success = res.isSuccess();
 		 	if(success) {

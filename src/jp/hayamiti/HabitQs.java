@@ -84,7 +84,7 @@ public class HabitQs {
 	}
 
 	public static boolean habitQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish,
-			CRecordMic mic) {
+			CRecordMic mic, int backDay) {
 		boolean isFinish = false;
 		HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
 		Enum<HabitQsState.Mode> mode = state.getMode();
@@ -92,7 +92,7 @@ public class HabitQs {
 		PostHabitReq result = state.getResult();
 		if (mode == HabitQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
-			recordARecogByHttp(mic, sotawish, questionI);
+			recordARecogByHttp(mic, sotawish, questionI, backDay);
 			// </質問をしてこたえを聞き取る>
 		} else if (mode == HabitQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
@@ -102,53 +102,55 @@ public class HabitQs {
 			// </答えを確認>
 		} else if (mode == HabitQsState.Mode.WAIT_CONFORM_ANS) {
 			// <確認待機>
-			isFinish = watiConform(pose, mem, motion, sotawish, mic, questionI, result);
+			isFinish = watiConform(pose, mem, motion, sotawish, mic, questionI, result, backDay);
 			// </確認待機>
 		}
 
 		return isFinish;
 	}
 
-	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI) {
+	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI,int backDay) {
 		String type = "";
 		HabitQsState.Action action = null;
 		String question = "";
 		try {
+			String relativeYesterday = backDay == 0 ?  "昨日" : (backDay+1) +"日前";
+			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 			// <今聞こうとしている質問に合わせた値を代入する>
 			switch ((HabitQsState.QuestionI) questionI) {
 				case IS_EXERCISE:
 					type = "exercise";
 					action = HabitQsState.Action.SET_EXERCISE_LISTEN_RESULT;
-					question = "昨日運動した?";
+					question = relativeYesterday + "運動した?";
 					break;
 				case IS_DRINKING:
 					type = "drinking";
 					action = HabitQsState.Action.SET_DRINGKING_LISTEN_RESULT;
-					question = "昨日お酒飲んだ?";
+					question = relativeYesterday + "お酒飲んだ?";
 					break;
 				case EAT_BREAKFAST:
 					type = "eatBreakfast";
-					question = "昨日朝ごはん食べた?";
+					question = relativeYesterday + "朝ごはん食べた?";
 					action = HabitQsState.Action.SET_EATBREAKFAST_LISTEN_RESULT;
 					break;
 				case EAT_SNACK:
 					type = "eatSnack";
-					question = "昨日おやつ食べた?";
+					question = relativeYesterday + "おやつ食べた?";
 					action = HabitQsState.Action.SET_EATSNACK_LISTEN_RESULT;
 					break;
 				case SNACK_NAME:
 					type = "snackName";
-					question = "昨日おやつに何食べたの?";
+					question = relativeYesterday + "おやつに何食べたの?";
 					action = HabitQsState.Action.SET_SNACKNAME_LISTEN_RESULT;
 					break;
 				case SLEEP:
 					type = "sleep";
-					question = "昨日何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。";
+					question = relativeYesterday + "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。";
 					action = HabitQsState.Action.SET_SLEEP_LISTEN_RESULT;
 					break;
 				case GETUP:
 					type = "getUp";
-					question = "今日何時に起きた?答え方はさっきと同じでお願い。";
+					question = relativeToday + "何時に起きた?答え方はさっきと同じでお願い。";
 					action = HabitQsState.Action.SET_GETUP_LISTEN_RESULT;
 					break;
 			}
@@ -188,7 +190,7 @@ public class HabitQs {
 		}
 	}
 
-	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, PostHabitReq result) {
+	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, PostHabitReq result,int backDay) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -208,7 +210,7 @@ public class HabitQs {
 					// 終了
 					questionI = HabitQsState.QuestionI.values()[0];
 					// <結果を送信>
-					if(!sendResult(result)) {
+					if(!sendResult(result, backDay)) {
 						sotawish.Say("登録に失敗しました。");
 					}
 					// </結果を送信>
@@ -232,13 +234,14 @@ public class HabitQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(PostHabitReq result) {
+	private static boolean sendResult(PostHabitReq result, int backDay) {
 	    boolean	isSuccess = false;
 		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 		// sotaと会話している人の名前を取得
 		ArrayList<User> fnResults = fnState.getResults();
 		String nickName = fnResults.get(fnResults.size() - 1).getNickName();
 		result.setNickName(nickName);
+		result.setBackDay(backDay);
         try {
 	        PostHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postHabit(result), PostHabitRes.class);
 		    boolean	success = res.isSuccess();
