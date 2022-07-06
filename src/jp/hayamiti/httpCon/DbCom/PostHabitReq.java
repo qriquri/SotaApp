@@ -16,6 +16,7 @@ public class PostHabitReq {
 	private String eatBreakfastT;
 	private String eatSnackT;
 	private String snackNameT;
+	private int backDay = 0;
 	public String getNickName() {
 		return nickName;
 	}
@@ -105,5 +106,11 @@ public class PostHabitReq {
 	}
 	public void setSnackNameT(String snackNameT) {
 		this.snackNameT = snackNameT;
+	}
+	public int getBackDay() {
+		return backDay;
+	}
+	public void setBackDay(int backDay) {
+		this.backDay = backDay;
 	}
 }

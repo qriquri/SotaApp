@@ -6,6 +6,7 @@ public class PostConditionReq extends JACKSONObject {
 	private String nickName;
 	private String condition;
 	private String sentence;
+	private int backDay = 0;
 	public String getNickName() {
 		return nickName;
 	}
@@ -23,5 +24,11 @@ public class PostConditionReq extends JACKSONObject {
 	}
 	public void setSentence(String sentence) {
 		this.sentence = sentence;
+	}
+	public int getBackDay() {
+		return backDay;
+	}
+	public void setBackDay(int backDay) {
+		this.backDay = backDay;
 	}
 }

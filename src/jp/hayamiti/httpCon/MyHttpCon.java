@@ -95,6 +95,20 @@ public class MyHttpCon {
     }
 
     /**
+     * 日にち認識（n日のnを取得する）
+     * @param filename
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static String dayRec(String filename) throws IOException {
+    	String response = "{\"success\": false}";
+        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis();
+        response = uploadFile(filename, url);
+        return response;
+    }
+
+    /**
      * yesNo判定
      * @param filename
      * @return
@@ -149,6 +163,23 @@ public class MyHttpCon {
        response = createGetReq(url);
         return response;
     }
+
+    /**
+     * 例えば3日前から7日前までなら、start=3, end = 7にする
+     * @param nickName
+     * @param isSota
+     * @param start 何日前から
+     * @param end   何日前まで
+     * @return
+     * @throws IOException
+     */
+    public static String getHabits(String nickName, boolean isSota, int start, int end) throws IOException {
+        String response = "{\"success\": false}";
+        String encodeName = URLEncoder.encode(nickName,"UTF-8");
+        String url = DB_HOME + "/getHabits?nickName="+encodeName+"&isSota="+isSota+"&start="+start+"&end="+end;
+        response = createGetReq(url);
+         return response;
+     }
 
     public static String postHabit(PostHabitReq req) throws IOException{
     	String response = "{\"success\": false}";

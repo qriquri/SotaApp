@@ -28,6 +28,7 @@ public class SotaState extends State{
 	    RECORDING,
 	    CAPTUREING,
 	    FIND_NAME,
+	    LISTEN_BACK_DAY,
 	    CONFORM_ALEADY_LISTENED,
 	    LISTEN_HABIT,
 	    LISTEN_CONDITION,
