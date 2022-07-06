@@ -11,9 +11,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
@@ -87,10 +89,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String nameRec(String filename) throws IOException {
+    public static String nameRec(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -101,10 +103,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String dayRec(String filename) throws IOException {
+    public static String dayRec(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis() + "&text=" +  URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -114,10 +116,13 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String yesOrNo(String filename) throws IOException {
+    public static String yesOrNo(List<String> alternative) throws IOException {
     	String response = "{\"success\": false}";
+    	YesOrNoReq req = new YesOrNoReq();
+    	req.setAlternative(alternative);
+    	String body = JSONMapper.mapper.writeValueAsString(req);
         String url = API_HOME + "/yesOrNo?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        response = sendJSON(body,url);
         return response;
     }
 
@@ -128,10 +133,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String habitQs(String filename, String type) throws IOException {
+    public static String habitQs(String text, String type) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type;
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -141,10 +146,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String conditionQs(String filename) throws IOException {
+    public static String conditionQs(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 

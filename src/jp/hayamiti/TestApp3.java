@@ -15,6 +15,7 @@ import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
@@ -52,6 +53,7 @@ public class TestApp3 {
 			//Store 初期化 stateを束ねる
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
+				add(new SpRecState());
 				add(new FindNameState());
 				add(new YesOrNoState());
 				add(new HabitQsState());
@@ -61,6 +63,7 @@ public class TestApp3 {
 			Store.bind(stateList);
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
+			SpRecState spRecState = (SpRecState)Store.getState(SpRecState.class);
 			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
 			DayQsState dayQsState = (DayQsState)Store.getState(DayQsState.class);
 			// </stateの取得>
@@ -92,13 +95,13 @@ public class TestApp3 {
 						// sotaに待機モーションをさせる
 						sotawish.StartIdling();
 						// 録音
-				        SpeechRec.recordARecogByHttp(mic);
+				        SpeechRec.speechRec(mic, motion);
 						// モード更新
 				        Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 				        // <話しかけられるのを待つ>
 					}else if(mode == SotaState.Mode.JUDDGING){
 						// <LISTENINGモードで聞き取った音声の判定>
-						boolean isFinish = juddging(sotawish,sotaState, findNameState,fnResults);
+						boolean isFinish = juddging(sotawish,spRecState, findNameState,fnResults);
 						if(isFinish) {
 							break;
 						};
@@ -190,8 +193,8 @@ public class TestApp3 {
 		}
 	}
 
-	private static boolean juddging(MotionAsSotaWish sotawish, SotaState sotaState,  FindNameState findNameState,ArrayList<User> fnResults) {
-		String recordResult = sotaState.getSpRecResult();
+	private static boolean juddging(MotionAsSotaWish sotawish, SpRecState spRecState,  FindNameState findNameState,ArrayList<User> fnResults) {
+		String recordResult = spRecState.getResult();
 		if(recordResult != ""){
 			sotawish.StopIdling();
 			// <聞き取った内容に応じて処理する>

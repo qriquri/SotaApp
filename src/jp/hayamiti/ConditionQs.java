@@ -11,10 +11,10 @@ import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -89,7 +89,7 @@ public class ConditionQs {
 		ConditionQsRes result = state.getResult();
 		if(mode == ConditionQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
-			recordARecogByHttp(mic, sotawish, backDay);
+			recordARec(mic, sotawish, backDay, motion);
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
@@ -105,21 +105,21 @@ public class ConditionQs {
 		return isFinish;
 	}
 
-	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish, int backDay) {
+	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, int backDay,CSotaMotion motion) {
 		try {
 			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 			// 質問する
 			sotawish.SayFile(TextToSpeechSota.getTTSFile(relativeToday + "の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
-			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(REC_PATH, 5000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
-
-			String result = MyHttpCon.conditionQs(REC_PATH);
+//			//raw　Waveファイルのみ対応
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(REC_PATH, 5000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+			SpeechRec.speechRec(mic, motion);
+			String result = MyHttpCon.conditionQs(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
 //			JSONObject data = new JSONObject(result);
 			ConditionQsRes res = JSONMapper.mapper.readValue(result, ConditionQsRes.class);

@@ -6,6 +6,7 @@ import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.utils.MyLog;
@@ -16,6 +17,8 @@ import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
+import jp.vstone.sotatalk.SpeechRecog;
+import jp.vstone.sotatalk.SpeechRecog.RecogResult;
 
 public class SpeechRec {
 	static final String TAG = "SpeechRec";
@@ -38,11 +41,13 @@ public class SpeechRec {
 			//Store 初期化 stateを束ねる
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
+				add(new SpRecState());
 			}};
 			Store.bind(stateList);
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
+			SpRecState spRecState = (SpRecState)Store.getState(SpRecState.class);
 			// </stateの取得>
 			// sotaのモードを取得
 			Enum<SotaState.Mode> mode = sotaState.getMode();
@@ -55,15 +60,16 @@ public class SpeechRec {
 				MotionSample.defaultPose(pose, mem, motion);
 				// sotaのモードをlisteningに変化
 				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+				Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.GOOGLE);
 				while(true){
 					// モード取得
 					mode = sotaState.getMode();
 					if(mode == SotaState.Mode.LISTENING) {
-						recordARecogByHttp(mic);
+						speechRec(mic, motion);
 						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 					}
 					else if(mode == SotaState.Mode.JUDDGING){
-						String recordResult = sotaState.getSpRecResult();
+						String recordResult = spRecState.getResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
 							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
@@ -74,6 +80,9 @@ public class SpeechRec {
 								// モード更新
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 							}
+						}else {
+							// モード更新
+							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 						}
 					}
 				}
@@ -108,16 +117,40 @@ public class SpeechRec {
 //			JSONObject data = new JSONObject(result);
 			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
 			MyLog.info(TAG,"get audio:" + res.getResult());
-            Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT, res.getResult());
+            Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT, res.getResult());
+            Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_ALTER, res.getAlternative());
 
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
-			Store.dispatch(SotaState.class, SotaState.Action.UPDATE_SP_REC_RESULT,"");
+			Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT,"");
 
 
 		}
 	}
 
+	public static void recordARecogBySotaCloud(CSotaMotion motion) {
+		SpeechRecog recog = new SpeechRecog(motion);
+		RecogResult result = recog.getRecognition(20000);
+		String text = "";
+		if(result.recognized){
+			text = result.getBasicResult();
+		}
+		Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT, text);
+	}
+
+	public static boolean speechRec(CRecordMic mic, CSotaMotion motion) {
+		SpRecState state = (SpRecState)Store.getState(SpRecState.class);
+		switch((SpRecState.Method)state.getMethod()) {
+		case GOOGLE:
+			recordARecogByHttp(mic);
+			break;
+		case SOTA_CLOUD:
+			recordARecogBySotaCloud(motion);
+			break;
+		}
+		return true;
+
+	}
 	/**
 	 * 聞き取り
 	 * @param pose

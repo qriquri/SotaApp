@@ -10,11 +10,11 @@ import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.ApiCom.DayQsRes;
 import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -33,7 +33,7 @@ public class DayQs {
 		DayQsState state = (DayQsState)Store.getState(DayQsState.class);
 		Enum<DayQsState.Mode> mode = state.getMode();
 		if(mode == DayQsState.Mode.LISTEN_ANS) {
-			recordARecByHttp(mic, sotawish);
+			recordARec(mic, sotawish, motion);
 		}else if(mode == DayQsState.Mode.CONFORM_ANS) {
 			int backDay = state.getResult();
 			if(backDay == 0) {
@@ -51,19 +51,20 @@ public class DayQs {
 		return isFinish;
 	}
 
-	private static void recordARecByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 			sotawish.SayFile(TextToSpeechSota.getTTSFile("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。"),MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(DAY_REC_PATH,3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(DAY_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
-			String result = MyHttpCon.dayRec(DAY_REC_PATH);
+			SpeechRec.speechRec(mic, motion);
+			String result = MyHttpCon.dayRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
 			DayQsRes res = JSONMapper.mapper.readValue(result, DayQsRes.class);
 			String ans = res.getResult();
