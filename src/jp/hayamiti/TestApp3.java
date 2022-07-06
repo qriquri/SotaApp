@@ -107,7 +107,12 @@ public class TestApp3 {
 						// <名前聞き取り>
 						boolean isFind = FindName.findName(pose, mem, motion, sotawish, mic);
 						if(isFind) {
-							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
+							if (findNameState.getResults().get(0).getIsRegistered()) {
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
+							}else {
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+
+							}
 						}
 						// </名前聞き取り>
 					}else if(mode == SotaState.Mode.LISTEN_BACK_DAY) {
