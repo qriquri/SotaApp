@@ -23,7 +23,6 @@ import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class HabitQs {
 	static final String TAG = "HabitQs";
@@ -96,7 +95,7 @@ public class HabitQs {
 			// </質問をしてこたえを聞き取る>
 		} else if (mode == HabitQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(state.getConformText() + "、であってる?");
+			TextToSpeech.speech(state.getConformText() + "、であってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// モード更新
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -157,7 +156,7 @@ public class HabitQs {
 			// </今聞こうとしている質問に合わせた値を代入する>
 
 			// 質問する
-			sotawish.SayFile(TextToSpeechSota.getTTSFile(question), MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech(question,sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
 //			//raw　Waveファイルのみ対応
 //			CPlayWave.PlayWave(REC_START_SOUND, false);
@@ -174,7 +173,7 @@ public class HabitQs {
 			String ans = res.getResult();
 
 			if (ans.equals("error")) {
-				sotawish.Say("エラーが起きたからもう一度聞くね");
+				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 			} else {
 				Store.dispatch(HabitQsState.class, action, res);
@@ -185,7 +184,7 @@ public class HabitQs {
 		} catch (Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			e.printStackTrace();
-			sotawish.Say("エラーが起きたからもう一度聞くね");
+			TextToSpeech.speech("エラーが起きたからもう一度聞くね",sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 		}
 	}
@@ -211,7 +210,7 @@ public class HabitQs {
 					questionI = HabitQsState.QuestionI.values()[0];
 					// <結果を送信>
 					if(!sendResult(result, backDay)) {
-						sotawish.Say("登録に失敗しました。");
+						TextToSpeech.speech("登録に失敗しました。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 					}
 					// </結果を送信>
 					isConformed =true;

@@ -60,6 +60,7 @@ public class SpeechRec {
 				MotionSample.defaultPose(pose, mem, motion);
 				// sotaのモードをlisteningに変化
 				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+				// 音声認識手法を設定
 				Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.GOOGLE);
 				while(true){
 					// モード取得

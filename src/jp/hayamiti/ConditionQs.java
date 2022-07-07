@@ -21,7 +21,6 @@ import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class ConditionQs {
 	static final String TAG = "ConditionQs";
@@ -65,7 +64,7 @@ public class ConditionQs {
 					// モード取得
 					mode = sotaState.getMode();
 					if(conditionQs(pose, mem, motion, sotawish, mic, 0)) {
-						sotawish.Say("終了するよ");
+						TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 						break;
 					}
 
@@ -93,7 +92,7 @@ public class ConditionQs {
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(result.getText() + "、であってる?");
+			TextToSpeech.speech(result.getText() + "、であってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// モード更新
 			Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -109,7 +108,7 @@ public class ConditionQs {
 		try {
 			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 			// 質問する
-			sotawish.SayFile(TextToSpeechSota.getTTSFile(relativeToday + "の体調はどんな感じ?"), MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech(relativeToday + "の体調はどんな感じ?", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
 //			//raw　Waveファイルのみ対応
 //			CPlayWave.PlayWave(REC_START_SOUND, false);
@@ -127,7 +126,7 @@ public class ConditionQs {
 			CRobotUtil.Log(TAG, ans);
 
 			if (ans.equals("error")) {
-				sotawish.Say("エラーが起きたからもう一度聞くね");
+				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 			}else {
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.SET_LISTEN_RESULT, res);
@@ -136,7 +135,7 @@ public class ConditionQs {
 			}
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
-			sotawish.Say("エラーが起きたからもう一度聞くね");
+			TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 		}
 	}
@@ -151,7 +150,7 @@ public class ConditionQs {
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 				// <結果を送信>
 				if(!sendResult(result, backDay)) {
-					sotawish.Say("送信に失敗したよ。");
+					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				}
 				// </結果を送信>
 				isConformed = true;

@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
+
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
@@ -82,6 +84,19 @@ public class MyHttpCon {
         return response;
     }
 
+    /**
+     * 音声合成
+     * @param filename
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static byte[] openJTalkRec(String text) throws IOException {
+    	byte[] response = null;
+        String url = API_HOME + "/openJTalk?&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReqByByte(url);
+        return response;
+    }
     /**
      * 名前認識
      * @param filename
@@ -271,11 +286,46 @@ public class MyHttpCon {
              con.setConnectTimeout(15000);
              con.connect();
              if (con.getResponseCode() == 200) {
+            	 // 成功したとき, レスポンスを読み取る
                  inputStream = con.getInputStream();
                  response = readFromStream(inputStream);
              }
          } catch (Exception e) {
-             MyLog.error(LOG_TAG, "getMsg" + e.toString());
+             MyLog.error(LOG_TAG, "createGetReq" + e.toString());
+         } finally {
+             if (con != null) {
+                 con.disconnect();
+             }
+             if (inputStream != null) {
+                 inputStream.close();
+             }
+         }
+         return response;
+    }
+
+    /**
+     * GETリクエストを送り、レスポンスを得る
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private static byte[] createGetReqByByte(String url) throws IOException{
+    	 HttpURLConnection con = null;
+         InputStream inputStream = null;
+         byte[] response = null;
+         try {
+         	 con = (HttpURLConnection) new URL(url).openConnection();
+             con.setRequestMethod("GET");
+             con.setReadTimeout(10000);
+             con.setConnectTimeout(15000);
+             con.connect();
+             if (con.getResponseCode() == 200) {
+            	 // 成功したとき, レスポンスを読み取る
+                 inputStream = con.getInputStream();
+                 response = readFromStreamByByte(inputStream);
+             }
+         } catch (Exception e) {
+             MyLog.error(LOG_TAG, "createGetReq" + e.toString());
          } finally {
              if (con != null) {
                  con.disconnect();
@@ -300,12 +350,34 @@ public class MyHttpCon {
             BufferedReader reader = new BufferedReader(inputStreamReader);
             String line = reader.readLine();
             while (line != null) {
-                output.append(line);
+            	if(output.length() == 0) {
+            		output.append(line);
+
+            	}else {
+            		output.append("\n"+line);
+
+            	}
                 line = reader.readLine();
             }
         }
         return output.toString();
     }
+
+    /**
+     * httpリクエストの返信を読み取る
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    private static byte[] readFromStreamByByte(InputStream inputStream) throws IOException {
+    	byte[] output = null;
+    	if (inputStream != null) {
+    		// バイト配列に変換する
+            output = IOUtils.toByteArray(inputStream);
+        }
+        return output;
+    }
+
 
     /**
      * httpリクエストでファイルを送り付ける

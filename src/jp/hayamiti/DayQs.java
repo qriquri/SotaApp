@@ -21,7 +21,6 @@ import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class DayQs {
 	public static final String TAG = "DayQs";
@@ -37,12 +36,12 @@ public class DayQs {
 		}else if(mode == DayQsState.Mode.CONFORM_ANS) {
 			int backDay = state.getResult();
 			if(backDay == 0) {
-				sotawish.Say("今日であってる？");
+				TextToSpeech.speech("今日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}else if (backDay == 1) {
-				sotawish.Say("昨日であってる？");
+				TextToSpeech.speech("昨日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			else {
-				sotawish.Say(backDay + "日前であってる？");
+				TextToSpeech.speech(backDay + "日前であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.WAIT_CONFORM);
 		}else if(mode == DayQsState.Mode.WAIT_CONFORM) {
@@ -53,7 +52,7 @@ public class DayQs {
 
 	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
-			sotawish.SayFile(TextToSpeechSota.getTTSFile("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。"),MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
@@ -76,7 +75,7 @@ public class DayQs {
 			}
 			CRobotUtil.Log(TAG, ans);
 			if(ans.equals("error")) {
-				sotawish.Say("エラーが起きたからもう一度聞くね");
+				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
 			}else {
 	    		// 追加する
@@ -86,7 +85,7 @@ public class DayQs {
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			e.printStackTrace();
-			sotawish.Say("エラーが起きたからもう一度聞くね");
+			TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
             Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
 		}
 	}
@@ -168,10 +167,10 @@ public class DayQs {
 						String recordResult = sotaState.getSpRecResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
-//							sotawish.SayFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
+//							TextToSpeech.speechFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
 
 							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
-								sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
+								TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 								// 通信終了
 //								client.disconnect();
 								break;

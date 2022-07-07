@@ -36,7 +36,7 @@ public class YesOrNo {
 			Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENNING_YES_OR_NO);
 		}else if(mode == YesOrNoState.Mode.ERROR) {
 			// 名前を見つけられなかったとき
-			sotawish.Say("聞き取れなかったよ");
+			TextToSpeech.speech("聞き取れなかったよ", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// <モード更新>
 			Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENNING_YES_OR_NO);
 			// <モード更新>
