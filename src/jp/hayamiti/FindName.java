@@ -9,18 +9,17 @@ import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class FindName {
 	static final String TAG = "FindNmae";
@@ -40,6 +39,7 @@ public class FindName {
 			//Store 初期化 stateを束ねる
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
+				add(new SpRecState());
 				add(new FindNameState());
 				add(new YesOrNoState());
 			}};
@@ -47,6 +47,7 @@ public class FindName {
 
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
+			SpRecState spRecState = (SpRecState)Store.getState(SpRecState.class);
 			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
 			// </stateの取得>
 			// sotaのモードを取得
@@ -62,6 +63,8 @@ public class FindName {
 				MotionSample.defaultPose(pose, mem, motion);
 				// sotaのモードをlisteningに変化
 				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
+
+				Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.GOOGLE);
 				while(true){
 					// モード取得
 					mode = sotaState.getMode();
@@ -74,12 +77,12 @@ public class FindName {
 								names.add(results.get(i).getFurigana());
 							}
 							String nameList = nameConnection(names);
-							sotawish.Say(nameList+",何か話して");
+							TextToSpeech.speech(nameList+",何か話して", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 							sotawish.StartIdling();
 						}
 						// 録音
 //						recordForSpRec(mic);
-				        SpeechRec.recordARecogByHttp(mic);
+				        SpeechRec.speechRec(mic, motion);
 						// モード更新
 				        Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 					}else if(mode == SotaState.Mode.WAIT) {
@@ -87,14 +90,14 @@ public class FindName {
 						if(results.size() > 0) {
 							//音声ファイル再生
 							//raw　Waveファイルのみ対応
-							sotawish.Say("うんうん");
+							TextToSpeech.speech("うんうん", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 						}
 					}
 					else if(mode == SotaState.Mode.JUDDGING){
-						String recordResult = sotaState.getSpRecResult();
+						String recordResult = spRecState.getResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
-//							sotawish.SayFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
+//							TextToSpeech.speechFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
 
 							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
 								if(results.size() > 0) {
@@ -103,7 +106,7 @@ public class FindName {
 										names.add(results.get(i).getFurigana());
 									}
 									String nameList = nameConnection(names);
-									sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
+									TextToSpeech.speech(nameList + ",さようなら", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 									final int nameNum = names.size();
 									// 名前削除
 									for(int i = 0; i < nameNum; i++) {
@@ -112,7 +115,7 @@ public class FindName {
 									}
 									MyLog.info(TAG, "名前の数"+ findNameState.getResults());
 								}else {
-									sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
+									TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 								}
 								// 通信終了
 //								client.disconnect();
@@ -164,7 +167,7 @@ public class FindName {
 		boolean isFind = false;
 		if(mode == FindNameState.Mode.LISTENNING_NAME) {
 			// 聞き取り
-			recordARecByHttp(mic, sotawish);
+			recordARec(mic, sotawish, motion);
 		}else if(mode == FindNameState.Mode.CONFORM_NAME) {
 			// 名前が合ってるか確認
 			conformName(sotawish, count, listenResults);
@@ -179,7 +182,7 @@ public class FindName {
 			isFind = findedName(sotawish, results);
 		}else if(mode == FindNameState.Mode.ERROR_NAME) {
 			// 名前を見つけられなかったとき
-			sotawish.Say("聞き取れなかったよ");
+			TextToSpeech.speech("聞き取れなかったよ", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// <モード更新>
 			// もう一度やり直す
 			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
@@ -212,7 +215,7 @@ public class FindName {
 
 //	private static void recordForFindName(CRecordMic mic, MotionAsSotaWish sotawish) {
 //		try {
-//			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
+//			TextToSpeech.speechFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
 //
 //			// <録音>
 //			mic.startRecording(FIND_NAME_REC_PATH,3000);
@@ -234,20 +237,21 @@ public class FindName {
 //		}
 //	}
 
-	private static void recordARecByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
-			sotawish.SayFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech("あなたの名前は？",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
-			//音声ファイル再生
-			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(FIND_NAME_REC_PATH,3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
+//			//音声ファイル再生
+//			//raw　Waveファイルのみ対応
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(FIND_NAME_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+			SpeechRec.speechRec(mic, motion);
 			//<名前認識>
-			String result = MyHttpCon.nameRec(FIND_NAME_REC_PATH);
+			String result = MyHttpCon.nameRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
 //			JSONObject data = new JSONObject(result);
 			NameRecRes res = JSONMapper.mapper.readValue(result, NameRecRes.class);
@@ -287,7 +291,7 @@ public class FindName {
 			// 未登録な名前で呼ぶ
 			newName = listenResults.get(count).getFurigana();
 		}
-		sotawish.Say(newName +"さん,で合ってる?");
+		TextToSpeech.speech(newName +"さん,で合ってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 		// モード更新
 		if(listenResults.size() == 1) {
 			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);
@@ -359,11 +363,11 @@ public class FindName {
 		if(isRegistered) {
 			// すでに記憶済みの名前の時
 			CRobotUtil.Log(TAG, newName);
-			sotawish.Say(newName+"さん,こんにちは");
+			TextToSpeech.speech(newName+"さん,こんにちは", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 		}else {
 			// 初めての名前の時
 			CRobotUtil.Log(TAG, newName);
-			sotawish.Say(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.");
+			TextToSpeech.speech(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 		}
 		// <モード更新>
 //		Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);

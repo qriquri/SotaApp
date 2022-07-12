@@ -15,8 +15,10 @@ import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
+import jp.hayamiti.state.TextToSpeechState;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
 import jp.vstone.RobotLib.CPlayWave;
@@ -52,6 +54,8 @@ public class TestApp3 {
 			//Store 初期化 stateを束ねる
 			ArrayList<State> stateList = new ArrayList<State>() {{
 				add(new SotaState());
+				add(new SpRecState());
+				add(new TextToSpeechState());
 				add(new FindNameState());
 				add(new YesOrNoState());
 				add(new HabitQsState());
@@ -61,6 +65,7 @@ public class TestApp3 {
 			Store.bind(stateList);
 	        // <stateの取得>
 			SotaState sotaState = (SotaState)Store.getState(SotaState.class);
+			SpRecState spRecState = (SpRecState)Store.getState(SpRecState.class);
 			FindNameState findNameState = (FindNameState)Store.getState(FindNameState.class);
 			DayQsState dayQsState = (DayQsState)Store.getState(DayQsState.class);
 			// </stateの取得>
@@ -68,6 +73,11 @@ public class TestApp3 {
 			Enum<SotaState.Mode> mode = sotaState.getMode();
 			// sotaと会話している人の名前を取得
 			ArrayList<User> fnResults = findNameState.getResults();
+			// 音声合成手法を設定
+			Store.dispatch(TextToSpeechState.class, TextToSpeechState.Action.SET_METHOD, TextToSpeechState.Method.SOTA_CLOUD);
+			// 音声認識手法を設定
+			Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.SOTA_CLOUD);
+
 			if(mem.Connect()){
 				//Sota仕様にVSMDを初期化
 				motion.InitRobot_Sota();
@@ -92,13 +102,13 @@ public class TestApp3 {
 						// sotaに待機モーションをさせる
 						sotawish.StartIdling();
 						// 録音
-				        SpeechRec.recordARecogByHttp(mic);
+				        SpeechRec.speechRec(mic, motion);
 						// モード更新
 				        Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
 				        // <話しかけられるのを待つ>
 					}else if(mode == SotaState.Mode.JUDDGING){
 						// <LISTENINGモードで聞き取った音声の判定>
-						boolean isFinish = juddging(sotawish,sotaState, findNameState,fnResults);
+						boolean isFinish = juddging(sotawish,spRecState, findNameState,fnResults);
 						if(isFinish) {
 							break;
 						};
@@ -134,11 +144,11 @@ public class TestApp3 {
 							String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
 							if(success) {
 								// 質問は一日一回
-								sotawish.Say(relativeToday + "はもう聞いたみたいだよ");
+								TextToSpeech.speech(relativeToday + "はもう聞いたみたいだよ", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
 							}else {
 								// まだ質問してない場合、質問する
-								sotawish.Say(relativeToday + "はまだ聞いてないみたいだから、いくつか質問するよ");
+								TextToSpeech.speech(relativeToday + "はまだ聞いてないみたいだから、いくつか質問するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 								// 質問結果をリセット
 								Store.dispatch(HabitQsState.class, HabitQsState.Action.RESET_RESULT, null);
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
@@ -163,10 +173,10 @@ public class TestApp3 {
 						}
 					}else if(mode == SotaState.Mode.FIN) {
 						// 聞き取り終了
-						sotawish.Say("質問はこれで終わり。");
+						TextToSpeech.speech("質問はこれで終わり。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 						String nameList = fnResults.get(0).getFurigana();
 						// </sotaが認識した名前を繋げる>
-						sotawish.Say(nameList + "さん,さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
+						TextToSpeech.speech(nameList + "さん,さようなら", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 						// 名前削除
 						// リストは消すと減っていくから、先頭を常に消す
 						Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
@@ -190,8 +200,8 @@ public class TestApp3 {
 		}
 	}
 
-	private static boolean juddging(MotionAsSotaWish sotawish, SotaState sotaState,  FindNameState findNameState,ArrayList<User> fnResults) {
-		String recordResult = sotaState.getSpRecResult();
+	private static boolean juddging(MotionAsSotaWish sotawish, SpRecState spRecState,  FindNameState findNameState,ArrayList<User> fnResults) {
+		String recordResult = spRecState.getResult();
 		if(recordResult != ""){
 			sotawish.StopIdling();
 			// <聞き取った内容に応じて処理する>
@@ -202,7 +212,7 @@ public class TestApp3 {
 						names.add(fnResults.get(i).getFurigana());
 					}
 					String nameList = FindName.nameConnection(names);
-					sotawish.Say(nameList + ",さようなら", MotionAsSotaWish.MOTION_TYPE_BYE);
+					TextToSpeech.speech(nameList + ",さようなら", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 					final int nameNum = names.size();
 					// 名前削除
 					for(int i = 0; i < nameNum; i++) {
@@ -211,7 +221,7 @@ public class TestApp3 {
 					}
 					MyLog.info(TAG, "名前の数"+ findNameState.getResults());
 				}else {
-					sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
+					TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 				}
 				return true;
 			}else if((recordResult.contains("おはよう") || recordResult.contains("こんにちは") || recordResult.contains("こんばんは")) && fnResults.size() == 0) {

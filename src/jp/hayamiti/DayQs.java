@@ -10,18 +10,17 @@ import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.ApiCom.DayQsRes;
 import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.SotaState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class DayQs {
 	public static final String TAG = "DayQs";
@@ -33,16 +32,16 @@ public class DayQs {
 		DayQsState state = (DayQsState)Store.getState(DayQsState.class);
 		Enum<DayQsState.Mode> mode = state.getMode();
 		if(mode == DayQsState.Mode.LISTEN_ANS) {
-			recordARecByHttp(mic, sotawish);
+			recordARec(mic, sotawish, motion);
 		}else if(mode == DayQsState.Mode.CONFORM_ANS) {
 			int backDay = state.getResult();
 			if(backDay == 0) {
-				sotawish.Say("今日であってる？");
+				TextToSpeech.speech("今日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}else if (backDay == 1) {
-				sotawish.Say("昨日であってる？");
+				TextToSpeech.speech("昨日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			else {
-				sotawish.Say(backDay + "日前であってる？");
+				TextToSpeech.speech(backDay + "日前であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.WAIT_CONFORM);
 		}else if(mode == DayQsState.Mode.WAIT_CONFORM) {
@@ -51,19 +50,20 @@ public class DayQs {
 		return isFinish;
 	}
 
-	private static void recordARecByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
-			sotawish.SayFile(TextToSpeechSota.getTTSFile("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。"),MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(DAY_REC_PATH,3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(DAY_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
-			String result = MyHttpCon.dayRec(DAY_REC_PATH);
+			SpeechRec.speechRec(mic, motion);
+			String result = MyHttpCon.dayRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
 			DayQsRes res = JSONMapper.mapper.readValue(result, DayQsRes.class);
 			String ans = res.getResult();
@@ -75,7 +75,7 @@ public class DayQs {
 			}
 			CRobotUtil.Log(TAG, ans);
 			if(ans.equals("error")) {
-				sotawish.Say("エラーが起きたからもう一度聞くね");
+				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
 			}else {
 	    		// 追加する
@@ -85,7 +85,7 @@ public class DayQs {
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			e.printStackTrace();
-			sotawish.Say("エラーが起きたからもう一度聞くね");
+			TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
             Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
 		}
 	}
@@ -167,10 +167,10 @@ public class DayQs {
 						String recordResult = sotaState.getSpRecResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
-//							sotawish.SayFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
+//							TextToSpeech.speechFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
 
 							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
-								sotawish.Say("終了するよ", MotionAsSotaWish.MOTION_TYPE_BYE);
+								TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 								// 通信終了
 //								client.disconnect();
 								break;

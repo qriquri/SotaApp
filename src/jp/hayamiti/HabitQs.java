@@ -12,18 +12,17 @@ import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
 import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
-import jp.vstone.sotatalk.TextToSpeechSota;
 
 public class HabitQs {
 	static final String TAG = "HabitQs";
@@ -92,11 +91,11 @@ public class HabitQs {
 		PostHabitReq result = state.getResult();
 		if (mode == HabitQsState.Mode.LISTEN_ANS) {
 			// <質問をしてこたえを聞き取る>
-			recordARecogByHttp(mic, sotawish, questionI, backDay);
+			recordARec(mic, sotawish, questionI, backDay, motion);
 			// </質問をしてこたえを聞き取る>
 		} else if (mode == HabitQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			sotawish.Say(state.getConformText() + "、であってる?");
+			TextToSpeech.speech(state.getConformText() + "、であってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// モード更新
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -109,7 +108,7 @@ public class HabitQs {
 		return isFinish;
 	}
 
-	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI,int backDay) {
+	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI,int backDay,CSotaMotion motion) {
 		String type = "";
 		HabitQsState.Action action = null;
 		String question = "";
@@ -157,24 +156,24 @@ public class HabitQs {
 			// </今聞こうとしている質問に合わせた値を代入する>
 
 			// 質問する
-			sotawish.SayFile(TextToSpeechSota.getTTSFile(question), MotionAsSotaWish.MOTION_TYPE_CALL);
+			TextToSpeech.speech(question,sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
-			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(REC_PATH, 3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
-
+//			//raw　Waveファイルのみ対応
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(REC_PATH, 3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+			SpeechRec.speechRec(mic, motion);
 			// apiサーバーに送信して、解析してもらう
-			String result = MyHttpCon.habitQs(REC_PATH, type);
+			String result = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);
 			HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
 			CRobotUtil.Log(TAG, JSONMapper.mapper.writeValueAsString(res));
 			String ans = res.getResult();
 
 			if (ans.equals("error")) {
-				sotawish.Say("エラーが起きたからもう一度聞くね");
+				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 			} else {
 				Store.dispatch(HabitQsState.class, action, res);
@@ -185,7 +184,7 @@ public class HabitQs {
 		} catch (Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			e.printStackTrace();
-			sotawish.Say("エラーが起きたからもう一度聞くね");
+			TextToSpeech.speech("エラーが起きたからもう一度聞くね",sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
 		}
 	}
@@ -211,7 +210,7 @@ public class HabitQs {
 					questionI = HabitQsState.QuestionI.values()[0];
 					// <結果を送信>
 					if(!sendResult(result, backDay)) {
-						sotawish.Say("登録に失敗しました。");
+						TextToSpeech.speech("登録に失敗しました。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 					}
 					// </結果を送信>
 					isConformed =true;

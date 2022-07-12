@@ -11,9 +11,13 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
+
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
@@ -81,16 +85,29 @@ public class MyHttpCon {
     }
 
     /**
+     * 音声合成
+     * @param filename
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    public static byte[] openJTalkRec(String text) throws IOException {
+    	byte[] response = null;
+        String url = API_HOME + "/openJTalk?&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReqByByte(url);
+        return response;
+    }
+    /**
      * 名前認識
      * @param filename
      * @param url
      * @return
      * @throws IOException
      */
-    public static String nameRec(String filename) throws IOException {
+    public static String nameRec(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -101,10 +118,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String dayRec(String filename) throws IOException {
+    public static String dayRec(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis() + "&text=" +  URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -114,10 +131,13 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String yesOrNo(String filename) throws IOException {
+    public static String yesOrNo(List<String> alternative) throws IOException {
     	String response = "{\"success\": false}";
+    	YesOrNoReq req = new YesOrNoReq();
+    	req.setAlternative(alternative);
+    	String body = JSONMapper.mapper.writeValueAsString(req);
         String url = API_HOME + "/yesOrNo?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        response = sendJSON(body,url);
         return response;
     }
 
@@ -128,10 +148,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String habitQs(String filename, String type) throws IOException {
+    public static String habitQs(String text, String type) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type;
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -141,10 +161,10 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String conditionQs(String filename) throws IOException {
+    public static String conditionQs(String text) throws IOException {
     	String response = "{\"success\": false}";
-        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        response = createGetReq(url);
         return response;
     }
 
@@ -266,11 +286,46 @@ public class MyHttpCon {
              con.setConnectTimeout(15000);
              con.connect();
              if (con.getResponseCode() == 200) {
+            	 // 成功したとき, レスポンスを読み取る
                  inputStream = con.getInputStream();
                  response = readFromStream(inputStream);
              }
          } catch (Exception e) {
-             MyLog.error(LOG_TAG, "getMsg" + e.toString());
+             MyLog.error(LOG_TAG, "createGetReq" + e.toString());
+         } finally {
+             if (con != null) {
+                 con.disconnect();
+             }
+             if (inputStream != null) {
+                 inputStream.close();
+             }
+         }
+         return response;
+    }
+
+    /**
+     * GETリクエストを送り、レスポンスを得る
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    private static byte[] createGetReqByByte(String url) throws IOException{
+    	 HttpURLConnection con = null;
+         InputStream inputStream = null;
+         byte[] response = null;
+         try {
+         	 con = (HttpURLConnection) new URL(url).openConnection();
+             con.setRequestMethod("GET");
+             con.setReadTimeout(10000);
+             con.setConnectTimeout(15000);
+             con.connect();
+             if (con.getResponseCode() == 200) {
+            	 // 成功したとき, レスポンスを読み取る
+                 inputStream = con.getInputStream();
+                 response = readFromStreamByByte(inputStream);
+             }
+         } catch (Exception e) {
+             MyLog.error(LOG_TAG, "createGetReq" + e.toString());
          } finally {
              if (con != null) {
                  con.disconnect();
@@ -295,12 +350,34 @@ public class MyHttpCon {
             BufferedReader reader = new BufferedReader(inputStreamReader);
             String line = reader.readLine();
             while (line != null) {
-                output.append(line);
+            	if(output.length() == 0) {
+            		output.append(line);
+
+            	}else {
+            		output.append("\n"+line);
+
+            	}
                 line = reader.readLine();
             }
         }
         return output.toString();
     }
+
+    /**
+     * httpリクエストの返信を読み取る
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    private static byte[] readFromStreamByByte(InputStream inputStream) throws IOException {
+    	byte[] output = null;
+    	if (inputStream != null) {
+    		// バイト配列に変換する
+            output = IOUtils.toByteArray(inputStream);
+        }
+        return output;
+    }
+
 
     /**
      * httpリクエストでファイルを送り付ける

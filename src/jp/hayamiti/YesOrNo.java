@@ -3,9 +3,9 @@ package jp.hayamiti;
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
+import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
-import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -30,13 +30,13 @@ public class YesOrNo {
 		Enum<YesOrNoState.Mode> mode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if(mode == YesOrNoState.Mode.LISTENNING_YES_OR_NO) {
 			// 聞き取る
-			recordARecogByHttp(mic, sotawish);
+			recordARecog(mic, sotawish, motion);
 		}else if(mode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
 			// モード更新
 			Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENNING_YES_OR_NO);
 		}else if(mode == YesOrNoState.Mode.ERROR) {
 			// 名前を見つけられなかったとき
-			sotawish.Say("聞き取れなかったよ");
+			TextToSpeech.speech("聞き取れなかったよ", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// <モード更新>
 			Store.dispatch(YesOrNoState.class, YesOrNoState.Action.UPDATE_MODE, YesOrNoState.Mode.LISTENNING_YES_OR_NO);
 			// <モード更新>
@@ -64,17 +64,18 @@ public class YesOrNo {
 //		}
 //	}
 
-	private static void recordARecogByHttp(CRecordMic mic, MotionAsSotaWish sotawish) {
+	private static void recordARecog(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
-			//音声ファイル再生
-			//raw　Waveファイルのみ対応
-			CPlayWave.PlayWave(REC_START_SOUND, false);
-			// <録音>
-			mic.startRecording(YES_OR_NO_REC_PATH,3000);
-			mic.waitend();
-			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
-			String result = MyHttpCon.yesOrNo(YES_OR_NO_REC_PATH);
+//			//音声ファイル再生
+//			//raw　Waveファイルのみ対応
+//			CPlayWave.PlayWave(REC_START_SOUND, false);
+//			// <録音>
+//			mic.startRecording(YES_OR_NO_REC_PATH,3000);
+//			mic.waitend();
+//			CRobotUtil.Log(TAG, "wait end");
+//			// </録音>
+			SpeechRec.speechRec(mic, motion);
+			String result = MyHttpCon.yesOrNo(((SpRecState) Store.getState(SpRecState.class)).getAlternative());
 			CRobotUtil.Log(TAG, result);
 			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
 			String isYes =res.getResult();
