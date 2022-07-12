@@ -1,6 +1,7 @@
 package jp.hayamiti;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
@@ -137,6 +138,9 @@ public class SpeechRec {
 			text = result.getBasicResult();
 		}
 		Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT, text);
+		List<String> resultList = new ArrayList<String>();
+		resultList.add(text);
+		Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_ALTER, resultList);
 	}
 
 	public static boolean speechRec(CRecordMic mic, CSotaMotion motion) {

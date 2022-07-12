@@ -74,10 +74,10 @@ public class TestApp3 {
 			// sotaと会話している人の名前を取得
 			ArrayList<User> fnResults = findNameState.getResults();
 			// 音声合成手法を設定
-			Store.dispatch(TextToSpeechState.class, TextToSpeechState.Action.SET_METHOD, TextToSpeechState.Method.OPEN_J_TALK);
+			Store.dispatch(TextToSpeechState.class, TextToSpeechState.Action.SET_METHOD, TextToSpeechState.Method.SOTA_CLOUD);
 			// 音声認識手法を設定
-			Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.GOOGLE);
-			
+			Store.dispatch(SpRecState.class, SpRecState.Action.SET_METHOD, SpRecState.Method.SOTA_CLOUD);
+
 			if(mem.Connect()){
 				//Sota仕様にVSMDを初期化
 				motion.InitRobot_Sota();
