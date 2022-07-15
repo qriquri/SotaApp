@@ -17,6 +17,7 @@ import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -24,12 +25,12 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class HabitQs {
-	static final String TAG = "HabitQs";
-	static final String REC_PATH = "./test_rec.wav";
-	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
+final public class HabitQs {
+	private static final String TAG = "HabitQs";
+//	static final String REC_PATH = "./test_rec.wav";
+//	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		MyLog.info(TAG, "test");
 		ArrayList<State> stateList = new ArrayList<State>(){{
 			add(new HabitQsState());
@@ -82,7 +83,7 @@ public class HabitQs {
 		MyLog.info(TAG, "end");
 	}
 
-	public static boolean habitQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish,
+	final public static boolean habitQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish,
 			CRecordMic mic, int backDay) {
 		boolean isFinish = false;
 		HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
@@ -95,7 +96,7 @@ public class HabitQs {
 			// </質問をしてこたえを聞き取る>
 		} else if (mode == HabitQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			TextToSpeech.speech(state.getConformText() + "、であってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+			TextToSpeech.speech(MyStrBuilder.build(64, state.getConformText(), "、であってる?"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// モード更新
 			Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -108,48 +109,48 @@ public class HabitQs {
 		return isFinish;
 	}
 
-	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI,int backDay,CSotaMotion motion) {
+ 	final private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, Enum<HabitQsState.QuestionI> questionI,int backDay,CSotaMotion motion) {
 		String type = "";
 		HabitQsState.Action action = null;
 		String question = "";
 		try {
-			String relativeYesterday = backDay == 0 ?  "昨日" : (backDay+1) +"日前";
-			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
+			String relativeYesterday = backDay == 0 ?  "昨日" : MyStrBuilder.build(12, (backDay+1), "日前");
+			String relativeToday = backDay == 0 ? "今日" : MyStrBuilder.build(12, backDay, "日前");
 			// <今聞こうとしている質問に合わせた値を代入する>
 			switch ((HabitQsState.QuestionI) questionI) {
 				case IS_EXERCISE:
 					type = "exercise";
 					action = HabitQsState.Action.SET_EXERCISE_LISTEN_RESULT;
-					question = relativeYesterday + "運動した?";
+					question = MyStrBuilder.build(64, relativeYesterday,"運動した?");
 					break;
 				case IS_DRINKING:
 					type = "drinking";
 					action = HabitQsState.Action.SET_DRINGKING_LISTEN_RESULT;
-					question = relativeYesterday + "お酒飲んだ?";
+					question = MyStrBuilder.build(64, relativeYesterday, "お酒飲んだ?");
 					break;
 				case EAT_BREAKFAST:
 					type = "eatBreakfast";
-					question = relativeYesterday + "朝ごはん食べた?";
+					question = MyStrBuilder.build(64, relativeYesterday, "朝ごはん食べた?");
 					action = HabitQsState.Action.SET_EATBREAKFAST_LISTEN_RESULT;
 					break;
 				case EAT_SNACK:
 					type = "eatSnack";
-					question = relativeYesterday + "おやつ食べた?";
+					question = MyStrBuilder.build(64, relativeYesterday, "おやつ食べた?");
 					action = HabitQsState.Action.SET_EATSNACK_LISTEN_RESULT;
 					break;
 				case SNACK_NAME:
 					type = "snackName";
-					question = relativeYesterday + "おやつに何食べたの?";
+					question = MyStrBuilder.build(64, relativeYesterday, "おやつに何食べたの?");
 					action = HabitQsState.Action.SET_SNACKNAME_LISTEN_RESULT;
 					break;
 				case SLEEP:
 					type = "sleep";
-					question = relativeYesterday + "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。";
+					question = MyStrBuilder.build(64, relativeYesterday, "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。");
 					action = HabitQsState.Action.SET_SLEEP_LISTEN_RESULT;
 					break;
 				case GETUP:
 					type = "getUp";
-					question = relativeToday + "何時に起きた?答え方はさっきと同じでお願い。";
+					question = MyStrBuilder.build(64, relativeToday, "何時に起きた?答え方はさっきと同じでお願い。");
 					action = HabitQsState.Action.SET_GETUP_LISTEN_RESULT;
 					break;
 			}
@@ -189,7 +190,7 @@ public class HabitQs {
 		}
 	}
 
-	private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, PostHabitReq result,int backDay) {
+	final private static boolean watiConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, Enum<HabitQsState.QuestionI> questionI, PostHabitReq result,int backDay) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -233,7 +234,7 @@ public class HabitQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(PostHabitReq result, int backDay) {
+	final private static boolean sendResult(PostHabitReq result, int backDay) {
 	    boolean	isSuccess = false;
 		FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
 		// sotaと会話している人の名前を取得

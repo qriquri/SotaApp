@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.utils.MyLog;
 
-public class FindNameState extends State {
+final public class FindNameState extends State {
 	private static final String LOG_TAG = "FindNameState";
     //<action>
     public enum Action{
@@ -38,7 +38,7 @@ public class FindNameState extends State {
     //</state>
     @SuppressWarnings("unchecked")
 	@Override
-    public <T> void dispatch(Enum<?> action, T val){
+    final public <T> void dispatch(Enum<?> action, T val){
     	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
         switch ((Action) action){
@@ -67,19 +67,19 @@ public class FindNameState extends State {
     }
 
     //<getter>
-    public Enum<Mode> getMode() {
+    final public Enum<Mode> getMode() {
     	return mode;
     }
-    public ArrayList<User> getResults(){
+    final public ArrayList<User> getResults(){
     	return results;
     }
-    public boolean getIsCollect() {
+    final public boolean getIsCollect() {
     	return isCollect;
     }
-    public ArrayList<User> getListenResults() {
+    final public ArrayList<User> getListenResults() {
     	return listenResults;
     }
-    public int getCount() {
+    final public int getCount() {
     	return count;
     }
     //</getter>

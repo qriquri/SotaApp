@@ -7,9 +7,9 @@ package jp.hayamiti;
 //import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.utils.MyLog;
 //
-public class SendHabit {
-	public static final String LOG_TAG = "sendHabit";
-	public static void main(String args[]) {
+final public class SendHabit {
+	private static final String LOG_TAG = "sendHabit";
+	final public static void main(String args[]) {
 		MyLog.info(LOG_TAG, "hello world");
 	}}
 ////		MyHttpCon.getTodayHabit("シンゲン", false);

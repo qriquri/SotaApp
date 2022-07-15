@@ -3,7 +3,7 @@ package jp.hayamiti.state;
 import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
 import jp.hayamiti.utils.MyLog;
 
-public class ConditionQsState extends State {
+final public class ConditionQsState extends State {
 	private static final String LOG_TAG = "ConditionQsState";
 
 	public enum Action{
@@ -23,7 +23,7 @@ public class ConditionQsState extends State {
 	private ConditionQsRes result = null;
 
 	@Override
-	public <T> void dispatch(Enum<?> action, T val){
+	final public <T> void dispatch(Enum<?> action, T val){
 
 		MyLog.info(LOG_TAG, "change:" + action.toString());
 
@@ -43,10 +43,10 @@ public class ConditionQsState extends State {
 
 	}
 
-	public Enum<Mode> getMode() {
+	final public Enum<Mode> getMode() {
 		return mode;
 	}
-	public ConditionQsRes getResult() {
+	final public ConditionQsRes getResult() {
 		return result;
 	}
 

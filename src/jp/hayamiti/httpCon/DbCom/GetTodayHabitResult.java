@@ -1,6 +1,6 @@
 package jp.hayamiti.httpCon.DbCom;
 
-public class GetTodayHabitResult{
+final public class GetTodayHabitResult{
 	private String nickName;
 	private long date;
 	private int sleep;
@@ -13,76 +13,76 @@ public class GetTodayHabitResult{
 	private int year;
 	private int month;
 	private int day;
-	public String getNickName() {
+	final public String getNickName() {
 		return nickName;
 	}
-	public void setNickName(String nickName) {
+	final public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
-	public long getDate() {
+	final public long getDate() {
 		return date;
 	}
-	public void setDate(long date) {
+	final public void setDate(long date) {
 		this.date = date;
 	}
-	public int getSleep() {
+	final public int getSleep() {
 		return sleep;
 	}
-	public void setSleep(int sleep) {
+	final public void setSleep(int sleep) {
 		this.sleep = sleep;
 	}
-	public int getGetUp() {
+	final public int getGetUp() {
 		return getUp;
 	}
-	public void setGetUp(int getUp) {
+	final public void setGetUp(int getUp) {
 		this.getUp = getUp;
 	}
-	public boolean isExercise() {
+	final public boolean isExercise() {
 		return exercise;
 	}
-	public void setExercise(boolean exercise) {
+	final public void setExercise(boolean exercise) {
 		this.exercise = exercise;
 	}
-	public boolean isDrinking() {
+	final public boolean isDrinking() {
 		return drinking;
 	}
-	public void setDrinking(boolean drinking) {
+	final public void setDrinking(boolean drinking) {
 		this.drinking = drinking;
 	}
-	public boolean isEatBreakfast() {
+	final public boolean isEatBreakfast() {
 		return eatBreakfast;
 	}
-	public void setEatBreakfast(boolean eatBreakfast) {
+	final public void setEatBreakfast(boolean eatBreakfast) {
 		this.eatBreakfast = eatBreakfast;
 	}
-	public boolean isEatSnack() {
+	final public boolean isEatSnack() {
 		return eatSnack;
 	}
-	public void setEatSnack(boolean eatSnack) {
+	final public void setEatSnack(boolean eatSnack) {
 		this.eatSnack = eatSnack;
 	}
-	public String getSnackName() {
+	final public String getSnackName() {
 		return snackName;
 	}
-	public void setSnackName(String snackName) {
+	final public void setSnackName(String snackName) {
 		this.snackName = snackName;
 	}
-	public int getYear() {
+	final public int getYear() {
 		return year;
 	}
-	public void setYear(int year) {
+	final public void setYear(int year) {
 		this.year = year;
 	}
-	public int getMonth() {
+	final public int getMonth() {
 		return month;
 	}
-	public void setMonth(int month) {
+	final public void setMonth(int month) {
 		this.month = month;
 	}
-	public int getDay() {
+	final public int getDay() {
 		return day;
 	}
-	public void setDay(int day) {
+	final public void setDay(int day) {
 		this.day = day;
 	}
 }

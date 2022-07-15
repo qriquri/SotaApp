@@ -21,6 +21,7 @@ import jp.hayamiti.state.Store;
 import jp.hayamiti.state.TextToSpeechState;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CPlayWave;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
@@ -141,14 +142,14 @@ public class TestApp3 {
 							String res = MyHttpCon.getHabits(nickName, true, backDay, backDay);
 							JSONObject data = new JSONObject(res);
 							Boolean success = data.getBoolean("success");
-							String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
+							String relativeToday = backDay == 0 ? "今日" : MyStrBuilder.build(5, backDay, "日前");
 							if(success) {
 								// 質問は一日一回
-								TextToSpeech.speech(relativeToday + "はもう聞いたみたいだよ", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
+								TextToSpeech.speech(MyStrBuilder.build(64 ,relativeToday,"はもう聞いたみたいだよ"), sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_BACK_DAY);
 							}else {
 								// まだ質問してない場合、質問する
-								TextToSpeech.speech(relativeToday + "はまだ聞いてないみたいだから、いくつか質問するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
+								TextToSpeech.speech(MyStrBuilder.build(64, relativeToday,"はまだ聞いてないみたいだから、いくつか質問するよ"), sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 								// 質問結果をリセット
 								Store.dispatch(HabitQsState.class, HabitQsState.Action.RESET_RESULT, null);
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
@@ -176,11 +177,11 @@ public class TestApp3 {
 						TextToSpeech.speech("質問はこれで終わり。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 						String nameList = fnResults.get(0).getFurigana();
 						// </sotaが認識した名前を繋げる>
-						TextToSpeech.speech(nameList + "さん,さようなら", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
+						TextToSpeech.speech(MyStrBuilder.build(64, nameList,"さん,さようなら"), sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 						// 名前削除
 						// リストは消すと減っていくから、先頭を常に消す
 						Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
-						MyLog.info(TAG, "名前の数"+ findNameState.getResults());
+						MyLog.info(TAG, MyStrBuilder.build(32, "名前の数",findNameState.getResults()));
 						// 初めの状態に戻る
 						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 					}
@@ -195,8 +196,8 @@ public class TestApp3 {
 			//raw　Waveファイルのみ対応
 			CPlayWave.PlayWave(START_SOUND, false);
 			GamingLED.off(pose, mem, motion);
-			 //サーボモータのトルクオフ
-			  motion.ServoOff();
+			//サーボモータのトルクオフ
+			motion.ServoOff();
 		}
 	}
 
@@ -212,14 +213,14 @@ public class TestApp3 {
 						names.add(fnResults.get(i).getFurigana());
 					}
 					String nameList = FindName.nameConnection(names);
-					TextToSpeech.speech(nameList + ",さようなら", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
+					TextToSpeech.speech(MyStrBuilder.build(63, nameList,",さようなら"), sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 					final int nameNum = names.size();
 					// 名前削除
 					for(int i = 0; i < nameNum; i++) {
 						// リストは消すと減っていくから、先頭を常に消す
 						Store.dispatch(FindNameState.class, FindNameState.Action.REMOVE_NAME, 0);
 					}
-					MyLog.info(TAG, "名前の数"+ findNameState.getResults());
+					MyLog.info(TAG, MyStrBuilder.build(64, "名前の数",findNameState.getResults()));
 				}else {
 					TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 				}

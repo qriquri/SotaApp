@@ -5,14 +5,14 @@ import java.util.List;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class YesOrNoReq extends JACKSONObject {
+final public class YesOrNoReq extends JACKSONObject {
 	private List<String> alternative = new ArrayList<String>();
 
-	public List<String> getAlternative() {
+	final public List<String> getAlternative() {
 		return alternative;
 	}
 
-	public void setAlternative(List<String> alternative) {
+	final public void setAlternative(List<String> alternative) {
 		this.alternative = alternative;
 	}
 }

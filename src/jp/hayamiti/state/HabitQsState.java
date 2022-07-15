@@ -4,7 +4,7 @@ import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
 
-public class HabitQsState extends State {
+final public class HabitQsState extends State {
 	private static final String LOG_TAG = "HabitQsState";
 	public enum QuestionI{
 		IS_EXERCISE,
@@ -15,13 +15,13 @@ public class HabitQsState extends State {
 		SLEEP,
 		GETUP,
 	}
-	// public static final int IS_EXERCISE = 0;
-	// public static final int IS_DRINKING = 1;
-	// public static final int EAT_BREAKFAST = 2;
-	// public static final int EAT_SNACK = 3;
-	// public static final int SNACK_NAME = 4;
-	// public static final int SLEEP = 5;
-	// public static final int GETUP = 6;
+	// final public static final int IS_EXERCISE = 0;
+	// final public static final int IS_DRINKING = 1;
+	// final public static final int EAT_BREAKFAST = 2;
+	// final public static final int EAT_SNACK = 3;
+	// final public static final int SNACK_NAME = 4;
+	// final public static final int SLEEP = 5;
+	// final public static final int GETUP = 6;
 
 	public enum Action{
 		UPDATE_MODE,
@@ -53,7 +53,7 @@ public class HabitQsState extends State {
 	private String conformText = ""; // Sotaが答えがあってるか確認するセリフに使う
 
 	@Override
-	public <T> void dispatch(Enum<?> action, T val){
+	final public <T> void dispatch(Enum<?> action, T val){
 
 		MyLog.info(LOG_TAG, "change: " + action.toString());
 
@@ -120,20 +120,20 @@ public class HabitQsState extends State {
 		}
 	}
 
-	public Enum<Mode> getMode() {
+	final public Enum<Mode> getMode() {
 		return mode;
 	}
-	// public int getQsNum() {
+	// final public int getQsNum() {
 	// 	return questionNum;
 	// }
 
-	public Enum<QuestionI> getQuestionI(){
+	final public Enum<QuestionI> getQuestionI(){
 		return questionI;
 	}
-	public PostHabitReq getResult(){
+	final public PostHabitReq getResult(){
 		return result;
 	}
-	public String getConformText() {
+	final public String getConformText() {
 		return conformText;
 	}
 

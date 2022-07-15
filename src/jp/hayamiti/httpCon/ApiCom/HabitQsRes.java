@@ -2,26 +2,26 @@ package jp.hayamiti.httpCon.ApiCom;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class HabitQsRes extends JACKSONObject{
+final public class HabitQsRes extends JACKSONObject{
 	private long sendTime;
 	private String result;
 	private String text;
-	public long getSendTime() {
+	final public long getSendTime() {
 		return sendTime;
 	}
-	public void setSendTime(long sendTime) {
+	final public void setSendTime(long sendTime) {
 		this.sendTime = sendTime;
 	}
-	public String getResult() {
+	final public String getResult() {
 		return result;
 	}
-	public void setResult(String result) {
+	final public void setResult(String result) {
 		this.result = result;
 	}
-	public String getText() {
+	final public String getText() {
 		return text;
 	}
-	public void setText(String text) {
+	final public void setText(String text) {
 		this.text = text;
 	}
 }

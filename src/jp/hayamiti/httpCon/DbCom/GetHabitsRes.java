@@ -5,19 +5,19 @@ import java.util.List;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class GetHabitsRes extends JACKSONObject {
+final public class GetHabitsRes extends JACKSONObject {
 	private List<GetTodayHabitResult> results = new ArrayList<GetTodayHabitResult>();
 	private boolean success;
-	public List<GetTodayHabitResult> getResults() {
+	final public List<GetTodayHabitResult> getResults() {
 		return results;
 	}
-	public void setResults(List<GetTodayHabitResult> results) {
+	final public void setResults(List<GetTodayHabitResult> results) {
 		this.results = results;
 	}
-	public boolean isSuccess() {
+	final public boolean isSuccess() {
 		return success;
 	}
-	public void setSuccess(boolean success) {
+	final public void setSuccess(boolean success) {
 		this.success = success;
 	}
 }
