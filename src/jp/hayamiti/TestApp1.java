@@ -14,10 +14,6 @@ import jp.hayamiti.utils.MyLog;
 public class TestApp1 {
 	static final String TAG = "TestApp1";
 	public static void main(String[] args) throws JsonProcessingException {
-//		System.out.println(System.currentTimeMillis());
-//		System.out.println(CRobotUtil.getTimeString());
-//		System.out.println(CRobotUtil.getLocale());
-//		System.out.println(CRobotUtil.getDateString());
 
 		TestJSON test = new TestJSON();
 		test.id = 10;

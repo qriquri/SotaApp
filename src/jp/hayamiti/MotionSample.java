@@ -136,8 +136,6 @@ public class MotionSample {
 		pose.SetPose(new Byte[] {1   ,2   ,3   ,4   ,5   ,6   ,7   ,8}	//id
 		,  new Short[]{0   ,-900, 0  ,900 ,  0 ,0   ,0   ,0}				//target pos
 				);
-		//LEDを点灯（左目：赤、右目：赤、口：Max、電源ボタン：赤）
-//		pose.setLED_Sota(Color.RED, Color.RED, 255, Color.RED);
 
 		//遷移時間1000msecで動作開始。
 		CRobotUtil.Log(TAG, "play:" + motion.play(pose,1000));
@@ -170,8 +168,6 @@ public class MotionSample {
 		pose.SetPose(new Byte[] {1   ,2   ,3   ,4   ,5   ,6   ,7   ,8}	//id
 		,  new Short[]{0   ,-450, -900  ,450 ,  900 ,0   ,0   ,0}				//target pos
 				);
-		//LEDを点灯（左目：赤、右目：赤、口：Max、電源ボタン：赤）
-//		pose.setLED_Sota(Color.RED, Color.RED, 255, Color.RED);
 
 		//遷移時間1000msecで動作開始。
 		CRobotUtil.Log(TAG, "play:" + motion.play(pose,1000));

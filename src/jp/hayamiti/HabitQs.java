@@ -27,8 +27,6 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 
 final public class HabitQs {
 	private static final String TAG = "HabitQs";
-//	static final String REC_PATH = "./test_rec.wav";
-//	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
 	final public static void main(String[] args) {
 		MyLog.info(TAG, "test");
@@ -158,14 +156,6 @@ final public class HabitQs {
 
 			// 質問する
 			TextToSpeech.speech(question,sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
-			//音声ファイル再生
-//			//raw　Waveファイルのみ対応
-//			CPlayWave.PlayWave(REC_START_SOUND, false);
-//			// <録音>
-//			mic.startRecording(REC_PATH, 3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
 			SpeechRec.speechRec(mic, motion);
 			// apiサーバーに送信して、解析してもらう
 			String result = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);

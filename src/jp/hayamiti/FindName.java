@@ -24,9 +24,6 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 
 final public class FindName {
 	private static final String TAG = "FindNmae";
-//	private static final String TEST_REC_PATH = "./test_rec.wav";
-//	private static final String FIND_NAME_REC_PATH = "./find_name.wav";
-//	private static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	final public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
@@ -192,69 +189,14 @@ final public class FindName {
 		return isFind;
 	}
 
-//	private static void recordForSpRec(CRecordMic mic) {
-//		try {
-//			// <録音>
-//			mic.startRecording(TEST_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
-//			// <録音した音声をサーバーに送信できる形にエンコード>
-//			File audioFile = new File(
-//					TEST_REC_PATH);
-//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-//	        String encoded = Base64.getEncoder().encodeToString(bytes);
-//	        CRobotUtil.Log(TAG, "encoded record file");
-//	        // </録音した音声をサーバーに送信できる形にエンコード>
-//	        // 送信
-//	        MyWsClient.emit(AudioListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
-//		}catch(Exception e) {
-//			CRobotUtil.Log(TAG, e.toString());
-//		}
-//	}
-
-//	private static void recordForFindName(CRecordMic mic, MotionAsSotaWish sotawish) {
-//		try {
-//			TextToSpeech.speechFile(TextToSpeechSota.getTTSFile("あなたの名前は？"),MotionAsSotaWish.MOTION_TYPE_CALL);
-//
-//			// <録音>
-//			mic.startRecording(FIND_NAME_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
-//			// <録音した音声をサーバーに送信できる形にエンコード>
-//			File audioFile = new File(
-//					FIND_NAME_REC_PATH);
-//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-//	        String encoded = Base64.getEncoder().encodeToString(bytes);
-//	        CRobotUtil.Log(TAG, "encoded record file");
-//	        // </録音した音声をサーバーに送信できる形にエンコード>
-//	        // 送信
-//	        MyWsClient.emit(FindNameListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
-//		}catch(Exception e) {
-//			CRobotUtil.Log(TAG, e.toString());
-//		}
-//	}
-
 	final private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 			TextToSpeech.speech("あなたの名前は？",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
-
-//			//音声ファイル再生
-//			//raw　Waveファイルのみ対応
-//			CPlayWave.PlayWave(REC_START_SOUND, false);
-//			// <録音>
-//			mic.startRecording(FIND_NAME_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
+			// </録音>
 			SpeechRec.speechRec(mic, motion);
 			//<名前認識>
 			String result = MyHttpCon.nameRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
-//			JSONObject data = new JSONObject(result);
 			NameRecRes res = JSONMapper.mapper.readValue(result, NameRecRes.class);
 			String nameKana = res.getResult();
 			CRobotUtil.Log(TAG, nameKana);
@@ -263,7 +205,6 @@ final public class FindName {
 			//<データベースからユーザー情報を取得>
 			result = MyHttpCon.getUserNames(nameKana);
 			CRobotUtil.Log(TAG, result);
-//			JSONObject userNames = new JSONObject(result);
 			GetUserNamesRes res2 = JSONMapper.mapper.readValue(result, GetUserNamesRes.class);
 			Boolean err = res2.isErr();
 			if(err) {
@@ -371,7 +312,6 @@ final public class FindName {
 			TextToSpeech.speech(MyStrBuilder.build(64, newName,"さん,初めまして.まだデータベースに登録されてないから、後で登録してね."), sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 		}
 		// <モード更新>
-//		Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
 		// また呼ばれたときのために始めのモードに戻しておく
 		Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.LISTENNING_NAME);
 		// </モード更新>
