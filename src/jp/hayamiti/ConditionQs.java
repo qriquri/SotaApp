@@ -110,18 +110,10 @@ final public class ConditionQs {
 			String relativeToday = backDay == 0 ? "今日" : MyStrBuilder.build(12, backDay, "日前");
 			// 質問する
 			TextToSpeech.speech(relativeToday + "の体調はどんな感じ?", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
-			//音声ファイル再生
-//			//raw　Waveファイルのみ対応
-//			CPlayWave.PlayWave(REC_START_SOUND, false);
-//			// <録音>
-//			mic.startRecording(REC_PATH, 5000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
+
 			SpeechRec.speechRec(mic, motion);
 			String result = MyHttpCon.conditionQs(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
-//			JSONObject data = new JSONObject(result);
 			ConditionQsRes res = JSONMapper.mapper.readValue(result, ConditionQsRes.class);
 			String ans = res.getResult();
 			CRobotUtil.Log(TAG, ans);

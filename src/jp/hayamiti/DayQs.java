@@ -25,8 +25,6 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 
 final public class DayQs {
 	private static final String TAG = "DayQs";
-//	private static final String DAY_REC_PATH = "./day_rec.wav";
-//	private static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
 	final public static boolean dayQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 		boolean isFinish = false;
@@ -55,14 +53,6 @@ final public class DayQs {
 		try {
 			TextToSpeech.speech("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
-			//音声ファイル再生
-			//raw　Waveファイルのみ対応
-//			CPlayWave.PlayWave(REC_START_SOUND, false);
-//			// <録音>
-//			mic.startRecording(DAY_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-			// </録音>
 			SpeechRec.speechRec(mic, motion);
 			String result = MyHttpCon.dayRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
 			CRobotUtil.Log(TAG, result);
@@ -159,8 +149,6 @@ final public class DayQs {
 					// モード取得
 					mode = sotaState.getMode();
 					if(mode == SotaState.Mode.LISTENING) {
-						// 録音
-//						recordForSpRec(mic);
 				        SpeechRec.recordARecogByHttp(mic);
 						// モード更新
 				        Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.JUDDGING);
@@ -168,8 +156,6 @@ final public class DayQs {
 						String recordResult = sotaState.getSpRecResult();
 						if(recordResult != ""){
 							sotawish.StopIdling();
-//							TextToSpeech.speechFile(TextToSpeechSota.getTTSFile(recordResult),MotionAsSotaWish.MOTION_TYPE_TALK);
-
 							if(recordResult.contains("おわり") || recordResult.contains("終わり")){
 								TextToSpeech.speech("終了するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_BYE);
 								// 通信終了

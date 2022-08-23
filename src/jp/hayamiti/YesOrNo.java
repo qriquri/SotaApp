@@ -15,8 +15,6 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 
 final public class YesOrNo {
 	private static final String TAG = "YesOrNO";
-//	static final String YES_OR_NO_REC_PATH = "./yes_or_no_rec.wav";
-//	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	/**
 	 * 名前聞き取り
 	 * @param pose
@@ -43,37 +41,10 @@ final public class YesOrNo {
 		}
 	}
 
-//	private static void recordForYesOrNo(CRecordMic mic, MotionAsSotaWish sotawish) {
-//		try {
-//			// <録音>
-//			mic.startRecording(YES_OR_NO_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
-//			// <録音した音声をサーバーに送信できる形にエンコード>
-//			File audioFile = new File(YES_OR_NO_REC_PATH);
-//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-//	        String encoded = Base64.getEncoder().encodeToString(bytes);
-//	        CRobotUtil.Log(TAG, "encoded record file");
-//	        // </録音した音声をサーバーに送信できる形にエンコード>
-//	        // 送信
-//	        MyWsClient.emit(YesOrNoListener.CHANNEL, encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>"));
-//		}catch(Exception e) {
-//			CRobotUtil.Log(TAG, e.toString());
-//		}
-//	}
+
 
 	final private static void recordARecog(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
-//			//音声ファイル再生
-//			//raw　Waveファイルのみ対応
-//			CPlayWave.PlayWave(REC_START_SOUND, false);
-//			// <録音>
-//			mic.startRecording(YES_OR_NO_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
 			SpeechRec.speechRec(mic, motion);
 			String result = MyHttpCon.yesOrNo(((SpRecState) Store.getState(SpRecState.class)).getAlternative());
 			CRobotUtil.Log(TAG, result);

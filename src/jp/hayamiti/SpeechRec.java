@@ -116,7 +116,6 @@ final public class SpeechRec {
 			// </録音>
 			String result = MyHttpCon.speechRec(TEST_REC_PATH);
 			CRobotUtil.Log(TAG, result);
-//			JSONObject data = new JSONObject(result);
 			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
 			MyLog.info(TAG,"get audio:" + res.getResult());
             Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT, res.getResult());
@@ -156,78 +155,4 @@ final public class SpeechRec {
 		return true;
 
 	}
-	/**
-	 * 聞き取り
-	 * @param pose
-	 * @param mem
-	 * @param motion
-	 * @param sotawish
-	 * @param mic
-	 *
-	 * @return boolean
-	 */
-//	final public static boolean speechRec(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int maxCount) {
-//		String mode = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getMode();
-//		String result = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getResult();
-//		int count = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getCount();
-//		if(mode == SpeechRecState.Mode.NON_LISTENING) {
-//			Store.dispatch(Store.SPEECH_REC_STATE, SpeechRecState.Action.UPDATE_MODE, SpeechRecState.Mode.PASSIVE_LISTENING);
-//		}else if(mode == SpeechRecState.Mode.PASSIVE_LISTENING) {
-//			MyLog.info(TAG, "passive listening");
-//			recordForSpRec(mic);
-//		}
-//		else if(mode == SpeechRecState.Mode.ACTIVE_LISTENING) {
-//			MyLog.info(TAG, "active listening");
-//			sotawish.StartIdling();
-//			recordForSpRec(mic);
-//		}else if(mode == SpeechRecState.Mode.FINISH_LISTENING) {
-//			MyLog.info(TAG, "finish listening");
-//			sotawish.StopIdling();
-//			Store.dispatch(Store.SPEECH_REC_STATE, SpeechRecState.Action.UPDATE_MODE, SpeechRecState.Mode.NON_LISTENING);
-//			return true;
-//		}
-//		if(count == maxCount) {
-//			MyLog.info(TAG, "finish listening by maxCount");
-//			sotawish.StopIdling();
-//			Store.dispatch(Store.SPEECH_REC_STATE, SpeechRecState.Action.UPDATE_MODE, SpeechRecState.Mode.NON_LISTENING);
-//			return true;
-//		}
-//		return false; // 終わってない
-//
-//	}
-
-//	private static void recordForSpRec(CRecordMic mic) {
-//		try {
-//			// <録音>
-//			mic.startRecording(TEST_REC_PATH,3000);
-//			mic.waitend();
-//			CRobotUtil.Log(TAG, "wait end");
-//			// </録音>
-//			String mode = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getMode();
-//			if(mode == SpeechRecState.Mode.NON_LISTENING) {
-//				return;
-//			}
-//			// <録音した音声をサーバーに送信できる形にエンコード>
-//			File audioFile = new File(
-//					TEST_REC_PATH);
-//	        byte[] bytes = FileUtils.readFileToByteArray(audioFile);
-//	        String encoded = Base64.getEncoder().encodeToString(bytes);
-//	        CRobotUtil.Log(TAG, "encoded record file");
-//	        // </録音した音声をサーバーに送信できる形にエンコード>
-//	        boolean isAdditional =  false;
-//	        if(((SpeechRecState)Store.getState(Store.SPEECH_REC_STATE)).getCount() > 0) {
-//	        	isAdditional = true;
-//	        }
-//	        String payload = "{\"sound\":"
-//                    + encoded.replace(" ", "<SPACE>").replace("/", "<SLASH>").replace("+", "<PLUS>")
-//                    .replace("=", "<EQUAL>").replace(",", "<COMMA>")
-//            + ", \"isAdditional\":" + isAdditional
-//            + ", \"sendTime\":" + System.currentTimeMillis()
-//            + "}";
-//	        // 送信
-//	        MyWsClient.emit(SpeechRecListener.CHANNEL, payload);
-//		}catch(Exception e) {
-//			CRobotUtil.Log(TAG, e.toString());
-//		}
-//	}
 }
