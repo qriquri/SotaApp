@@ -10,7 +10,6 @@ import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
 import jp.hayamiti.httpCon.ApiCom.NameRecRes;
 import jp.hayamiti.httpCon.ApiCom.SpRecRes;
-import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
 import jp.hayamiti.utils.MyLog;
 
 public class ApiResponseTest {
@@ -45,16 +44,16 @@ public class ApiResponseTest {
 			MyLog.error(TAG, e.toString());
 		}
 
-		try {
-			MyLog.info(TAG, "yesOrNo");
-			String result = MyHttpCon.yesOrNo(TEST_REC_PATH);
-			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
-			String json = JSONMapper.mapper.writeValueAsString(res);
-			MyLog.info(TAG, json);
-		} catch (IOException e) {
-			// TODO 自動生成された catch ブロック
-			MyLog.error(TAG, e.toString());
-		}
+//		try {
+//			MyLog.info(TAG, "yesOrNo");
+//			String result = MyHttpCon.yesOrNo(TEST_REC_PATH);
+//			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
+//			String json = JSONMapper.mapper.writeValueAsString(res);
+//			MyLog.info(TAG, json);
+//		} catch (IOException e) {
+//			// TODO 自動生成された catch ブロック
+//			MyLog.error(TAG, e.toString());
+//		}
 
 		try {
 			MyLog.info(TAG, "habitQs");

@@ -10,7 +10,7 @@ import jp.hayamiti.utils.MyLog;
  * @author HayamitiHirotaka
  *
  */
-public class SotaState extends State{
+final public class SotaState extends State{
 	private static final String LOG_TAG = "SotaState";
     //<action>
     public enum Action{
@@ -43,7 +43,7 @@ public class SotaState extends State{
     private Enum<Mode> mode = Mode.WAIT;
     //</state>
     @Override
-    public <T> void dispatch(Enum<?> action, T val){
+    final public <T> void dispatch(Enum<?> action, T val){
     	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
         switch ((Action)action){
@@ -65,14 +65,14 @@ public class SotaState extends State{
     }
 
     //<getter>
-    public boolean getIsRecord(){return  isRecord; }
-    public ArrayList<String> getRecordResult(){
+    final public boolean getIsRecord(){return  isRecord; }
+    final public ArrayList<String> getRecordResult(){
         return recordResult;
     }
-    public String getSpRecResult() {
+    final public String getSpRecResult() {
     	return spRecResult;
     }
-    public Enum<Mode> getMode() {
+    final public Enum<Mode> getMode() {
     	return mode;
     }
     //</getter>

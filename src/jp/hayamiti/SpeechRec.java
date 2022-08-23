@@ -21,11 +21,11 @@ import jp.vstone.sotatalk.MotionAsSotaWish;
 import jp.vstone.sotatalk.SpeechRecog;
 import jp.vstone.sotatalk.SpeechRecog.RecogResult;
 
-public class SpeechRec {
+final public class SpeechRec {
 	static final String TAG = "SpeechRec";
 	static final String TEST_REC_PATH = "./test_rec.wav";
 	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
 		CRobotMem mem = new CRobotMem();
@@ -104,7 +104,7 @@ public class SpeechRec {
 	 * 音声認識
 	 * @param mic
 	 */
-	public static void recordARecogByHttp(CRecordMic mic) {
+	final public static void recordARecogByHttp(CRecordMic mic) {
 		try {
 			//音声ファイル再生
 			//raw　Waveファイルのみ対応
@@ -130,7 +130,7 @@ public class SpeechRec {
 		}
 	}
 
-	public static void recordARecogBySotaCloud(CSotaMotion motion) {
+	final public static void recordARecogBySotaCloud(CSotaMotion motion) {
 		SpeechRecog recog = new SpeechRecog(motion);
 		RecogResult result = recog.getRecognition(20000);
 		String text = "";
@@ -143,7 +143,7 @@ public class SpeechRec {
 		Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_ALTER, resultList);
 	}
 
-	public static boolean speechRec(CRecordMic mic, CSotaMotion motion) {
+	final public static boolean speechRec(CRecordMic mic, CSotaMotion motion) {
 		SpRecState state = (SpRecState)Store.getState(SpRecState.class);
 		switch((SpRecState.Method)state.getMethod()) {
 		case GOOGLE:
@@ -166,7 +166,7 @@ public class SpeechRec {
 	 *
 	 * @return boolean
 	 */
-//	public static boolean speechRec(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int maxCount) {
+//	final public static boolean speechRec(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int maxCount) {
 //		String mode = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getMode();
 //		String result = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getResult();
 //		int count = ((SpeechRecState) Store.getState(Store.SPEECH_REC_STATE)).getCount();

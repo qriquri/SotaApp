@@ -22,7 +22,7 @@ import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
 import jp.hayamiti.utils.MyLog;
 
-public class MyHttpCon {
+final public class MyHttpCon {
 //	private static final String EOL = System.getProperty("line.separator");
 	private static final String EOL = "\r\n"; // <= サーバーのosの改行コードに合わせる
     private static final String LOG_TAG = "MyHttpCon";
@@ -37,7 +37,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String uploadFile(String filename, String url) throws IOException {
+    final public static String uploadFile(String filename, String url) throws IOException {
         HttpURLConnection con = null;
         FileInputStream file = null;
         InputStream inputStream = null;
@@ -77,7 +77,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String speechRec(String filename) throws IOException {
+    final public static String speechRec(String filename) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/spRec?sendTime=" + System.currentTimeMillis();
         response = uploadFile(filename, url);
@@ -91,7 +91,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static byte[] openJTalkRec(String text) throws IOException {
+    final public static byte[] openJTalkRec(String text) throws IOException {
     	byte[] response = null;
         String url = API_HOME + "/openJTalk?&text=" + URLEncoder.encode(text, "UTF-8");
         response = createGetReqByByte(url);
@@ -104,7 +104,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String nameRec(String text) throws IOException {
+    final public static String nameRec(String text) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
         response = createGetReq(url);
@@ -118,7 +118,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String dayRec(String text) throws IOException {
+    final public static String dayRec(String text) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis() + "&text=" +  URLEncoder.encode(text, "UTF-8");
         response = createGetReq(url);
@@ -131,7 +131,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String yesOrNo(List<String> alternative) throws IOException {
+    final public static String yesOrNo(List<String> alternative) throws IOException {
     	String response = "{\"success\": false}";
     	YesOrNoReq req = new YesOrNoReq();
     	req.setAlternative(alternative);
@@ -148,7 +148,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String habitQs(String text, String type) throws IOException {
+    final public static String habitQs(String text, String type) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type + "&text=" + URLEncoder.encode(text, "UTF-8");
         response = createGetReq(url);
@@ -161,14 +161,14 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String conditionQs(String text) throws IOException {
+    final public static String conditionQs(String text) throws IOException {
     	String response = "{\"success\": false}";
         String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
         response = createGetReq(url);
         return response;
     }
 
-    public static String getUserNames(String nameKana) throws IOException {
+    final public static String getUserNames(String nameKana) throws IOException {
     	String response = "{\"success\": false}";
         String encodeName = URLEncoder.encode(nameKana,"UTF-8");
         String url = DB_HOME + "/getUserNames?nameKana="+ encodeName;
@@ -176,7 +176,7 @@ public class MyHttpCon {
         return response;
     }
 
-    public static String getTodayHabit(String nickName, boolean isSota) throws IOException {
+    final public static String getTodayHabit(String nickName, boolean isSota) throws IOException {
        String response = "{\"success\": false}";
        String encodeName = URLEncoder.encode(nickName,"UTF-8");
        String url = DB_HOME + "/getTodayHabit?nickName="+encodeName+"&isSota="+isSota;
@@ -193,7 +193,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String getHabits(String nickName, boolean isSota, int start, int end) throws IOException {
+    final public static String getHabits(String nickName, boolean isSota, int start, int end) throws IOException {
         String response = "{\"success\": false}";
         String encodeName = URLEncoder.encode(nickName,"UTF-8");
         String url = DB_HOME + "/getHabits?nickName="+encodeName+"&isSota="+isSota+"&start="+start+"&end="+end;
@@ -201,7 +201,7 @@ public class MyHttpCon {
          return response;
      }
 
-    public static String postHabit(PostHabitReq req) throws IOException{
+    final public static String postHabit(PostHabitReq req) throws IOException{
     	String response = "{\"success\": false}";
     	try {
 	    	String url = DB_HOME + "/postHabit";
@@ -216,7 +216,7 @@ public class MyHttpCon {
     	return response;
     }
 
-    public static String postCondition(PostConditionReq req) throws IOException{
+    final public static String postCondition(PostConditionReq req) throws IOException{
     	String response = "{\"success\": false}";
     	try {
     		String url = DB_HOME + "/postCondition";
@@ -237,7 +237,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String sendJSON(String body, String url) throws IOException {
+    final public static String sendJSON(String body, String url) throws IOException {
         String response = "{\"success\": false}";
         HttpURLConnection con = null;
         InputStream inputStream = null;
@@ -275,7 +275,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    private static String createGetReq(String url) throws IOException{
+    final private static String createGetReq(String url) throws IOException{
     	 HttpURLConnection con = null;
          InputStream inputStream = null;
          String response = "{\"success\": false}";
@@ -309,7 +309,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    private static byte[] createGetReqByByte(String url) throws IOException{
+    final private static byte[] createGetReqByByte(String url) throws IOException{
     	 HttpURLConnection con = null;
          InputStream inputStream = null;
          byte[] response = null;
@@ -343,7 +343,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    private static String readFromStream(InputStream inputStream) throws IOException {
+    final private static String readFromStream(InputStream inputStream) throws IOException {
         StringBuilder output = new StringBuilder();
         if (inputStream != null) {
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
@@ -369,7 +369,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    private static byte[] readFromStreamByByte(InputStream inputStream) throws IOException {
+    final private static byte[] readFromStreamByByte(InputStream inputStream) throws IOException {
     	byte[] output = null;
     	if (inputStream != null) {
     		// バイト配列に変換する
@@ -386,7 +386,7 @@ public class MyHttpCon {
      * @param file
      * @throws IOException
      */
-    private static void sendFileHttp(HttpURLConnection con, String filename, FileInputStream file) throws IOException{
+    final private static void sendFileHttp(HttpURLConnection con, String filename, FileInputStream file) throws IOException{
         // <httpリクエスト設定>
         final String boundary = UUID.randomUUID().toString();
         con.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
@@ -417,7 +417,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String getMsg(String url) throws IOException {
+    final public static String getMsg(String url) throws IOException {
         HttpURLConnection con = null;
         InputStream inputStream = null;
         String response = "{\"success\": false}";
@@ -451,7 +451,7 @@ public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    public static String SendMsg(String msg, String url) throws IOException {
+    final public static String SendMsg(String msg, String url) throws IOException {
     	 String response = "{\"success\": false}";
         HttpURLConnection con = null;
         InputStream inputStream = null;

@@ -2,19 +2,19 @@ package jp.hayamiti.httpCon.ApiCom;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class BasicRes extends JACKSONObject{
+final public class BasicRes extends JACKSONObject{
 	private long sendTime;
 	private String result;
-	public long getSendTime() {
+	final public long getSendTime() {
 		return sendTime;
 	}
-	public void setSendTime(long sendTime) {
+	final public void setSendTime(long sendTime) {
 		this.sendTime = sendTime;
 	}
-	public String getResult() {
+	final public String getResult() {
 		return result;
 	}
-	public void setResult(String result) {
+	final public void setResult(String result) {
 		this.result = result;
 	}
 }

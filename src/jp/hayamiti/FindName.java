@@ -14,6 +14,7 @@ import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -21,12 +22,12 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class FindName {
-	static final String TAG = "FindNmae";
-	static final String TEST_REC_PATH = "./test_rec.wav";
-	static final String FIND_NAME_REC_PATH = "./find_name.wav";
-	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
-	public static void main(String[] args) {
+final public class FindName {
+	private static final String TAG = "FindNmae";
+//	private static final String TEST_REC_PATH = "./test_rec.wav";
+//	private static final String FIND_NAME_REC_PATH = "./find_name.wav";
+//	private static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
+	final public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
 		CRobotMem mem = new CRobotMem();
@@ -159,7 +160,7 @@ public class FindName {
 	 * @param sotawish
 	 * @param mic
 	 */
-	public static boolean findName(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	final public static boolean findName(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 		Enum<FindNameState.Mode> mode = ((FindNameState) Store.getState(FindNameState.class)).getMode();
 		ArrayList<User> results = ((FindNameState) Store.getState(FindNameState.class)).getResults();
 		ArrayList<User> listenResults = ((FindNameState)Store.getState(FindNameState.class)).getListenResults();
@@ -237,7 +238,7 @@ public class FindName {
 //		}
 //	}
 
-	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
+	final private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 			TextToSpeech.speech("あなたの名前は？",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
@@ -280,8 +281,8 @@ public class FindName {
 		}
 	}
 
-	private static void conformName(MotionAsSotaWish sotawish, int count, ArrayList<User> listenResults) {
-		CRobotUtil.Log(TAG,"データベースに登録されていた数" + (listenResults.size()));
+	final private static void conformName(MotionAsSotaWish sotawish, int count, ArrayList<User> listenResults) {
+		CRobotUtil.Log(TAG,MyStrBuilder.build(64, "データベースに登録されていた数", listenResults.size()));
 		MyLog.info(TAG, "count = "+count);
 		String newName = "";
 		if(listenResults.get(count).getIsRegistered()) {
@@ -291,7 +292,7 @@ public class FindName {
 			// 未登録な名前で呼ぶ
 			newName = listenResults.get(count).getFurigana();
 		}
-		TextToSpeech.speech(newName +"さん,で合ってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+		TextToSpeech.speech(MyStrBuilder.build(64, newName, "さん,で合ってる?"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 		// モード更新
 		if(listenResults.size() == 1) {
 			Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.WAIT_CONFORM);
@@ -301,7 +302,7 @@ public class FindName {
 		}
 	}
 
-	private static void waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, ArrayList<User> listenResults) {
+	final private static void waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, ArrayList<User> listenResults) {
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
 			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
@@ -323,7 +324,7 @@ public class FindName {
 		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
 	}
 
-	private static void waitConfromMultiple(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, ArrayList<User> listenResults) {
+	final private static void waitConfromMultiple(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic ,int count, ArrayList<User> listenResults) {
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if(yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
 			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
@@ -356,18 +357,18 @@ public class FindName {
 
 	}
 
-	private static boolean findedName(MotionAsSotaWish sotawish, ArrayList<User> results) {
+	final private static boolean findedName(MotionAsSotaWish sotawish, ArrayList<User> results) {
 		CRobotUtil.Log(TAG,"数" + (results.size()));
 		String newName = results.get(results.size()-1).getFurigana();
 		boolean isRegistered = results.get(results.size()-1).getIsRegistered();
 		if(isRegistered) {
 			// すでに記憶済みの名前の時
 			CRobotUtil.Log(TAG, newName);
-			TextToSpeech.speech(newName+"さん,こんにちは", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
+			TextToSpeech.speech(MyStrBuilder.build(64, newName,"さん,こんにちは"), sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 		}else {
 			// 初めての名前の時
 			CRobotUtil.Log(TAG, newName);
-			TextToSpeech.speech(newName+"さん,初めまして.まだデータベースに登録されてないから、後で登録してね.", sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
+			TextToSpeech.speech(MyStrBuilder.build(64, newName,"さん,初めまして.まだデータベースに登録されてないから、後で登録してね."), sotawish, MotionAsSotaWish.MOTION_TYPE_TALK);
 		}
 		// <モード更新>
 //		Store.dispatch(Store.SOTA_STATE, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTENING);
@@ -377,7 +378,7 @@ public class FindName {
 		return true;
 	}
 
-	public static String nameConnection(ArrayList<String> names) {
+	final public static String nameConnection(ArrayList<String> names) {
 		String nameList = "";
 		for(int i =0; i < names.size(); i++) {
 			nameList += names.get(i).split(",")[0] + "さん,";

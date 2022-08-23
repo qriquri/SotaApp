@@ -14,11 +14,11 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class TextToSpeech {
+final public class TextToSpeech {
 	private static final String TAG = "TextToSpeech";
-	public static final String FILE_PATH = "open_jtalk.wav";
+	private static final String FILE_PATH = "open_jtalk.wav";
 
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		// </JSONMapperクラスのmapperはインスタンス生成に時間がかかるので、初めに生成しておく>
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
@@ -48,7 +48,7 @@ public class TextToSpeech {
 	 * @param sotawish
 	 * @param scene モーションの種類
 	 */
-	public static void speech(String text, MotionAsSotaWish sotawish,  String scene) {
+	final public static void speech(String text, MotionAsSotaWish sotawish,  String scene) {
 		TextToSpeechState state = (TextToSpeechState) Store.getState(TextToSpeechState.class);
 		try {
 			if(state.getMethod() == TextToSpeechState.Method.SOTA_CLOUD) {

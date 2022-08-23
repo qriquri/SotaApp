@@ -13,10 +13,10 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class YesOrNo {
-	static final String TAG = "YesOrNO";
-	static final String YES_OR_NO_REC_PATH = "./yes_or_no_rec.wav";
-	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
+final public class YesOrNo {
+	private static final String TAG = "YesOrNO";
+//	static final String YES_OR_NO_REC_PATH = "./yes_or_no_rec.wav";
+//	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 	/**
 	 * 名前聞き取り
 	 * @param pose
@@ -25,7 +25,7 @@ public class YesOrNo {
 	 * @param sotawish
 	 * @param mic
 	 */
-	public static void yesOrNo(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	final public static void yesOrNo(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 //		String mode = ((YesOrNoState) Store.getState(Store.YES_OR_NO_STATE)).getMode();
 		Enum<YesOrNoState.Mode> mode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if(mode == YesOrNoState.Mode.LISTENNING_YES_OR_NO) {
@@ -64,7 +64,7 @@ public class YesOrNo {
 //		}
 //	}
 
-	private static void recordARecog(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
+	final private static void recordARecog(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 //			//音声ファイル再生
 //			//raw　Waveファイルのみ対応

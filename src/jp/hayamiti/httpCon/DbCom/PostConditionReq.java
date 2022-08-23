@@ -2,33 +2,33 @@ package jp.hayamiti.httpCon.DbCom;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class PostConditionReq extends JACKSONObject {
+final public class PostConditionReq extends JACKSONObject {
 	private String nickName;
 	private String condition;
 	private String sentence;
 	private int backDay = 0;
-	public String getNickName() {
+	final public String getNickName() {
 		return nickName;
 	}
-	public void setNickName(String nickName) {
+	final public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
-	public String getCondition() {
+	final public String getCondition() {
 		return condition;
 	}
-	public void setCondition(String condition) {
+	final public void setCondition(String condition) {
 		this.condition = condition;
 	}
-	public String getSentence() {
+	final public String getSentence() {
 		return sentence;
 	}
-	public void setSentence(String sentence) {
+	final public void setSentence(String sentence) {
 		this.sentence = sentence;
 	}
-	public int getBackDay() {
+	final public int getBackDay() {
 		return backDay;
 	}
-	public void setBackDay(int backDay) {
+	final public void setBackDay(int backDay) {
 		this.backDay = backDay;
 	}
 }

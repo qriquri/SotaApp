@@ -1,10 +1,10 @@
 package jp.hayamiti.utils;
 
-public class MyLog {
+final public class MyLog {
     public MyLog(){
 
     }
-    public static void info(String LOG_TAG, String message){
+    final public static void info(String LOG_TAG, String message){
         System.out.print("[");
         System.out.print(LOG_TAG);
         System.out.print("]");
@@ -15,7 +15,7 @@ public class MyLog {
         System.out.println("");
     }
 
-    public static void error(String LOG_TAG, String message){
+    final public static void error(String LOG_TAG, String message){
         System.out.print("[");
         System.out.print(LOG_TAG);
         System.out.print("]");

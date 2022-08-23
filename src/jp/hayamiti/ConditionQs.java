@@ -15,6 +15,7 @@ import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
+import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -22,12 +23,12 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class ConditionQs {
+final public class ConditionQs {
 	static final String TAG = "ConditionQs";
 	static final String REC_PATH = "./test_rec.wav";
 	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		CRobotPose pose = null;
 		//VSMDと通信ソケット・メモリアクセス用クラス
 		CRobotMem mem = new CRobotMem();
@@ -81,7 +82,7 @@ public class ConditionQs {
 	}
 
 
-	public static boolean conditionQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int backDay) {
+	final public static boolean conditionQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, int backDay) {
 		boolean isFinish = false;
 		ConditionQsState state = (ConditionQsState)Store.getState(ConditionQsState.class);
 		Enum<ConditionQsState.Mode> mode = state.getMode();
@@ -92,7 +93,7 @@ public class ConditionQs {
 			// </質問をしてこたえを聞き取る>
 		}else if (mode == ConditionQsState.Mode.CONFORM_ANS) {
 			// <答えを確認>
-			TextToSpeech.speech(result.getText() + "、であってる?", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+			TextToSpeech.speech(MyStrBuilder.build(64, result.getText(),"、であってる?"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			// モード更新
 			Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.WAIT_CONFORM_ANS);
 			// </答えを確認>
@@ -104,9 +105,9 @@ public class ConditionQs {
 		return isFinish;
 	}
 
-	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, int backDay,CSotaMotion motion) {
+	final private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, int backDay,CSotaMotion motion) {
 		try {
-			String relativeToday = backDay == 0 ? "今日" : backDay + "日前";
+			String relativeToday = backDay == 0 ? "今日" : MyStrBuilder.build(12, backDay, "日前");
 			// 質問する
 			TextToSpeech.speech(relativeToday + "の体調はどんな感じ?", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 			//音声ファイル再生
@@ -140,7 +141,7 @@ public class ConditionQs {
 		}
 	}
 
-	private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, ConditionQsRes result, int backDay) {
+	final private static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic, ConditionQsRes result, int backDay) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -169,7 +170,7 @@ public class ConditionQs {
 		return isConformed;
 	}
 
-	private static boolean sendResult(ConditionQsRes result, int backDay) {
+	final private static boolean sendResult(ConditionQsRes result, int backDay) {
 		boolean isSuccess = false;
 		try {
 			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);

@@ -2,7 +2,7 @@ package jp.hayamiti.state;
 
 import jp.hayamiti.utils.MyLog;
 
-public class TextToSpeechState extends State {
+final public class TextToSpeechState extends State {
 	private final String LOG_TAG = "TextToSpeechState";
 	public enum Action{
 		SET_METHOD
@@ -14,7 +14,7 @@ public class TextToSpeechState extends State {
 	}
 	private Enum<Method> method = Method.OPEN_J_TALK;
 	@Override
-	public <T> void dispatch(Enum<?> action, T val) {
+	final public <T> void dispatch(Enum<?> action, T val) {
 		MyLog.info(LOG_TAG, "change:" + action.toString());
 
 		switch((Action) action) {
@@ -27,7 +27,7 @@ public class TextToSpeechState extends State {
 
 	}
 
-	public Enum<Method> getMethod(){
+	final public Enum<Method> getMethod(){
 		return method;
 	}
 

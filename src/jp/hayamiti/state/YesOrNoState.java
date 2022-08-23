@@ -2,7 +2,7 @@ package jp.hayamiti.state;
 
 import jp.hayamiti.utils.MyLog;
 
-public class YesOrNoState extends State{
+final public class YesOrNoState extends State{
 
 	private static final String LOG_TAG = "YesOrNoState";
     //<action>
@@ -25,7 +25,7 @@ public class YesOrNoState extends State{
     private boolean isYes = false;
     //</state>
     @Override
-    public <T> void dispatch(Enum<?> action, T val){
+    final public <T> void dispatch(Enum<?> action, T val){
     	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
         switch ((Action) action){
@@ -41,10 +41,10 @@ public class YesOrNoState extends State{
     }
 
     //<getter>
-    public Enum<Mode> getMode() {
+    final public Enum<Mode> getMode() {
     	return mode;
     }
-    public boolean getIsYes() {
+    final public boolean getIsYes() {
     	return isYes;
     }
     //</getter>

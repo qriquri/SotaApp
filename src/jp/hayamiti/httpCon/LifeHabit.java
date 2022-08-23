@@ -1,6 +1,6 @@
 package jp.hayamiti.httpCon;
 
-public class LifeHabit {
+final public class LifeHabit {
 	private String sleepT = "";
 	private String getUpT = "";
 	private String exerciseT = "";
@@ -16,7 +16,7 @@ public class LifeHabit {
 	private boolean eatBreakfast = false;
 	private boolean eatSnack = false;
 	private String snackName = "";
-	public void setText(String sleepT, String getUpT, String exerciseT, String drinkingT, String eatBreakfastT, String eatSnackT, String snackNameT) {
+	final public void setText(String sleepT, String getUpT, String exerciseT, String drinkingT, String eatBreakfastT, String eatSnackT, String snackNameT) {
 		this.sleepT = sleepT;
 		this.getUpT = getUpT;
 		this.exerciseT = exerciseT;
@@ -26,7 +26,7 @@ public class LifeHabit {
 		this.snackNameT = snackNameT;
 	};
 
-	public void setVal(int sleep, int getUp, boolean exercise, boolean drinking, boolean eatBreakfast, boolean eatSnack, String snackName) {
+	final public void setVal(int sleep, int getUp, boolean exercise, boolean drinking, boolean eatBreakfast, boolean eatSnack, String snackName) {
 		this.sleep = sleep;
 		this.getUp = getUp;
 		this.exercise = exercise;
@@ -36,30 +36,30 @@ public class LifeHabit {
 		this.snackName = snackName;
 	};
 
-	public String[] getTextList() {
+	final public String[] getTextList() {
 		String[] list = {sleepT, getUpT, exerciseT, drinkingT, eatBreakfastT, eatSnackT, snackNameT};
 		return list;
 	};
-	
-	public int getSleep() {
+
+	final public int getSleep() {
 		return sleep;
 	}
-	public int getGetUp() {
+	final public int getGetUp() {
 		return getUp;
 	}
-	public boolean getExercise() {
+	final public boolean getExercise() {
 		return exercise;
 	}
-	public boolean getDrinking() {
+	final public boolean getDrinking() {
 		return drinking;
 	}
-	public boolean getEatBreakfast() {
+	final public boolean getEatBreakfast() {
 		return eatBreakfast;
 	}
-	public boolean getEatSnack() {
+	final public boolean getEatSnack() {
 		return eatSnack;
 	}
-	public String getSnackName() {
+	final public String getSnackName() {
 		return snackName;
 	}
 }

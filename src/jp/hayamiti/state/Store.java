@@ -12,14 +12,14 @@ import jp.hayamiti.utils.MyLog;
  * @author HayamitiHirotaka
  *
  */
-public class Store {
+final public class Store {
 	private static final String TAG = "Store";
     private static Map<Class<? extends State>, State> stateMap = new HashMap<>();
 	/**
 	 * ステートを束ねる
 	 * @param stateList
 	 */
-	public static void bind(ArrayList<State> stateList) {
+	final public static void bind(ArrayList<State> stateList) {
     	for (int i = 0; i < stateList.size(); i++) {
     		stateMap.put(stateList.get(i).getClass(), stateList.get(i));
     	}
@@ -32,7 +32,7 @@ public class Store {
 	 * @param action
 	 * @param val
 	 */
-	public static  <T>  void dispatch(Class<? extends State> klass, Enum<?> action, T val) {
+	final public static  <T>  void dispatch(Class<? extends State> klass, Enum<?> action, T val) {
 		State state = getState(klass);
 		state.dispatch(action, val);
 	}
@@ -42,13 +42,13 @@ public class Store {
      * @param klass ほしいステートのクラス
      * @return ステート
      */
-    public static State getState(Class<? extends State> klass){
+    final public static State getState(Class<? extends State> klass){
     	// null だったら例外を出す
     	Optional<State> stateOpt = Optional.of(stateMap.get(klass));
         return stateOpt.get();
     }
 
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		ArrayList<State> stateList = new ArrayList<State>(){{
 			add(new FindNameState());
 		}};

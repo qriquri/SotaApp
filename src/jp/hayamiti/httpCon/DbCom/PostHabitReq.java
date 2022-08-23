@@ -1,6 +1,6 @@
 package jp.hayamiti.httpCon.DbCom;
 
-public class PostHabitReq {
+final public class PostHabitReq {
 	private String nickName;
 	private int sleep;
 	private int getUp;
@@ -17,100 +17,100 @@ public class PostHabitReq {
 	private String eatSnackT;
 	private String snackNameT;
 	private int backDay = 0;
-	public String getNickName() {
+	final public String getNickName() {
 		return nickName;
 	}
-	public void setNickName(String nickName) {
+	final public void setNickName(String nickName) {
 		this.nickName = nickName;
 	}
-	public int getSleep() {
+	final public int getSleep() {
 		return sleep;
 	}
-	public void setSleep(int sleep) {
+	final public void setSleep(int sleep) {
 		this.sleep = sleep;
 	}
-	public int getGetUp() {
+	final public int getGetUp() {
 		return getUp;
 	}
-	public void setGetUp(int getUp) {
+	final public void setGetUp(int getUp) {
 		this.getUp = getUp;
 	}
-	public boolean isExercise() {
+	final public boolean isExercise() {
 		return exercise;
 	}
-	public void setExercise(boolean exercise) {
+	final public void setExercise(boolean exercise) {
 		this.exercise = exercise;
 	}
-	public boolean isDrinking() {
+	final public boolean isDrinking() {
 		return drinking;
 	}
-	public void setDrinking(boolean drinking) {
+	final public void setDrinking(boolean drinking) {
 		this.drinking = drinking;
 	}
-	public boolean isEatBreakfast() {
+	final public boolean isEatBreakfast() {
 		return eatBreakfast;
 	}
-	public void setEatBreakfast(boolean eatBreakfast) {
+	final public void setEatBreakfast(boolean eatBreakfast) {
 		this.eatBreakfast = eatBreakfast;
 	}
-	public boolean isEatSnack() {
+	final public boolean isEatSnack() {
 		return eatSnack;
 	}
-	public void setEatSnack(boolean eatSnack) {
+	final public void setEatSnack(boolean eatSnack) {
 		this.eatSnack = eatSnack;
 	}
-	public String getSnackName() {
+	final public String getSnackName() {
 		return snackName;
 	}
-	public void setSnackName(String snackName) {
+	final public void setSnackName(String snackName) {
 		this.snackName = snackName;
 	}
-	public String getSleepT() {
+	final public String getSleepT() {
 		return sleepT;
 	}
-	public void setSleepT(String sleepT) {
+	final public void setSleepT(String sleepT) {
 		this.sleepT = sleepT;
 	}
-	public String getGetUpT() {
+	final public String getGetUpT() {
 		return getUpT;
 	}
-	public void setGetUpT(String getUpT) {
+	final public void setGetUpT(String getUpT) {
 		this.getUpT = getUpT;
 	}
-	public String getExerciseT() {
+	final public String getExerciseT() {
 		return exerciseT;
 	}
-	public void setExerciseT(String exerciseT) {
+	final public void setExerciseT(String exerciseT) {
 		this.exerciseT = exerciseT;
 	}
-	public String getDrinkingT() {
+	final public String getDrinkingT() {
 		return drinkingT;
 	}
-	public void setDrinkingT(String drinkingT) {
+	final public void setDrinkingT(String drinkingT) {
 		this.drinkingT = drinkingT;
 	}
-	public String getEatBreakfastT() {
+	final public String getEatBreakfastT() {
 		return eatBreakfastT;
 	}
-	public void setEatBreakfastT(String eatBreakfastT) {
+	final public void setEatBreakfastT(String eatBreakfastT) {
 		this.eatBreakfastT = eatBreakfastT;
 	}
-	public String getEatSnackT() {
+	final public String getEatSnackT() {
 		return eatSnackT;
 	}
-	public void setEatSnackT(String eatSnackT) {
+	final public void setEatSnackT(String eatSnackT) {
 		this.eatSnackT = eatSnackT;
 	}
-	public String getSnackNameT() {
+	final public String getSnackNameT() {
 		return snackNameT;
 	}
-	public void setSnackNameT(String snackNameT) {
+	final public void setSnackNameT(String snackNameT) {
 		this.snackNameT = snackNameT;
 	}
-	public int getBackDay() {
+	final public int getBackDay() {
 		return backDay;
 	}
-	public void setBackDay(int backDay) {
+	final public void setBackDay(int backDay) {
 		this.backDay = backDay;
 	}
 }

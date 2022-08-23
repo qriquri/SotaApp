@@ -15,6 +15,7 @@ import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
+import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
@@ -22,12 +23,12 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class DayQs {
-	public static final String TAG = "DayQs";
-	static final String DAY_REC_PATH = "./day_rec.wav";
-	static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
+final public class DayQs {
+	private static final String TAG = "DayQs";
+//	private static final String DAY_REC_PATH = "./day_rec.wav";
+//	private static final String REC_START_SOUND = "sound/mao-damasi-onepoint23.wav";
 
-	public static boolean dayQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	final public static boolean dayQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 		boolean isFinish = false;
 		DayQsState state = (DayQsState)Store.getState(DayQsState.class);
 		Enum<DayQsState.Mode> mode = state.getMode();
@@ -41,7 +42,7 @@ public class DayQs {
 				TextToSpeech.speech("昨日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			else {
-				TextToSpeech.speech(backDay + "日前であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+				TextToSpeech.speech(MyStrBuilder.build(64, backDay,"日前であってる？"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.WAIT_CONFORM);
 		}else if(mode == DayQsState.Mode.WAIT_CONFORM) {
@@ -90,7 +91,7 @@ public class DayQs {
 		}
 	}
 
-	public static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+	final public static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
 		boolean isConformed = false;
 		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
 		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
@@ -114,7 +115,7 @@ public class DayQs {
 		return isConformed;
 	}
 
-	public static void main(String[] args) {
+	final public static void main(String[] args) {
 		// <JSONMapperクラスのmapperはインスタンス生成に時間がかかるので、初めに生成しておく>
 		try {
 			JSONMapper.mapper.writeValueAsString(new BasicRes());

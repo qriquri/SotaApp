@@ -5,7 +5,7 @@ import java.util.List;
 
 import jp.hayamiti.utils.MyLog;
 
-public class SpRecState extends State {
+final public class SpRecState extends State {
 	private static final String LOG_TAG = "SpeechRecState";
     //<action>
     public enum Action{
@@ -39,7 +39,7 @@ public class SpRecState extends State {
     //</state>
     @SuppressWarnings("unchecked")
 	@Override
-    public <T> void dispatch(Enum<?> action, T val){
+    final public <T> void dispatch(Enum<?> action, T val){
     	MyLog.info(LOG_TAG, "change:" + action.toString());
         // break忘れんなよ!
         switch ((Action)action){
@@ -69,17 +69,17 @@ public class SpRecState extends State {
     }
 
     //<getter>
-    public Enum<Mode> getMode() {
+    final public Enum<Mode> getMode() {
     	return mode;
     }
-    public String getResult(){
+    final public String getResult(){
     	return result;
     }
 
-    public List<String> getAlternative(){
+    final public List<String> getAlternative(){
     	return alternative;
     }
-    public Enum<Method> getMethod(){
+    final public Enum<Method> getMethod(){
     	return method;
     }
     //</getter>
