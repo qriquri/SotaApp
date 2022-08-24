@@ -7,6 +7,7 @@ final public class DayQsState extends State {
 	public enum Action{
 		UPDATE_MODE,
 		SET_RESULT,
+		SET_IS_END
 	}
 	public enum Mode{
 		LISTEN_ANS,
@@ -15,6 +16,7 @@ final public class DayQsState extends State {
 	}
 	private Enum<Mode> mode = Mode.LISTEN_ANS;
 	private int result = 0; // 遡る日にち
+	private boolean isEnd = false; // 終了とこたえたか
 	@Override
 	final public <T> void dispatch(Enum<?> action, T val) {
 		MyLog.info(LOG_TAG, "change:" + action.toString());
@@ -25,6 +27,9 @@ final public class DayQsState extends State {
 			break;
 		case SET_RESULT:
 			result = (int) val;
+			break;
+		case SET_IS_END:
+			isEnd = (boolean) val;
 		default:
 			break;
 		}
@@ -36,6 +41,10 @@ final public class DayQsState extends State {
 
 	final public int getResult() {
 		return result;
+	}
+
+	final public boolean getIsEnd() {
+		return isEnd;
 	}
 
 
