@@ -18,6 +18,7 @@ import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
+import jp.hayamiti.state.SuggestNextHabitState;
 import jp.hayamiti.state.TextToSpeechState;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
@@ -64,6 +65,7 @@ public class TestApp4 {
 					add(new HabitQsState());
 					add(new ConditionQsState());
 					add(new DayQsState());
+					add(new SuggestNextHabitState());
 				}
 			};
 			Store.bind(stateList);
@@ -192,7 +194,7 @@ public class TestApp4 {
 						}
 					} else if (mode == SotaState.Mode.ADVISE) {
 						// 次の週の改善目標を提案する
-						TextToSpeech.speech("次はこうしよう", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
+						SuggestNextHabit.suggestNextHabit(pose, mem, motion, sotawish, mic);
 						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 					} else if (mode == SotaState.Mode.FIN) {
 						// 聞き取り終了

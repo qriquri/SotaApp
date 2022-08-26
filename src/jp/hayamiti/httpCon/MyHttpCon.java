@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitReq;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
@@ -166,6 +167,22 @@ final public class MyHttpCon {
         String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
         response = createGetReq(url);
         return response;
+    }
+
+    /**
+     * 次の週の改善目標を教えてもらう
+     * @param habit
+     * @return
+     * @throws IOException
+     */
+    final public static String getSuggestedNextHabit(int[] habit) throws IOException{
+    	String response = "{\"success\": false}";
+    	String url = API_HOME + "/getSuggestedNextHabit";
+    	GetSuggestedNextHabitReq req = new GetSuggestedNextHabitReq();
+    	req.setHabit(habit);
+    	String body = JSONMapper.mapper.writeValueAsString(req);
+    	response = sendJSON(body, url);
+    	return response;
     }
 
     final public static String getUserNames(String nameKana) throws IOException {
