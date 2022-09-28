@@ -21,6 +21,7 @@ import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitReq;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostSuggestHabitReq;
 import jp.hayamiti.utils.MyLog;
 
 final public class MyHttpCon {
@@ -222,6 +223,21 @@ final public class MyHttpCon {
     	String response = "{\"success\": false}";
     	try {
 	    	String url = DB_HOME + "/postHabit";
+	    	String body = JSONMapper.mapper.writeValueAsString(req);
+    		response = sendJSON(body, url);
+    	}catch(Exception e) {
+    		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
+
+    	}finally {
+
+    	}
+    	return response;
+    }
+
+    final public static String postSuggestHaibt(PostSuggestHabitReq req) throws IOException{
+    	String response = "{\"success\": false}";
+    	try {
+	    	String url = DB_HOME + "/postSuggestHabit";
 	    	String body = JSONMapper.mapper.writeValueAsString(req);
     		response = sendJSON(body, url);
     	}catch(Exception e) {
