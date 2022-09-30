@@ -2,7 +2,7 @@ package jp.hayamiti.httpCon.DbCom;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-public class PostSuggestHabitReq extends JACKSONObject {
+public class PostSuggestedHabitReq extends JACKSONObject {
 	private String nickName;
 	private String item;
 	private int value;

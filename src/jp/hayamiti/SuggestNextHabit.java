@@ -7,6 +7,8 @@ import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitRes;
 import jp.hayamiti.httpCon.DbCom.GetHabitsRes;
+import jp.hayamiti.httpCon.DbCom.PostSuggestedHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostSuggestedHabitRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.Store;
@@ -15,6 +17,7 @@ import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CRecordMic;
 import jp.vstone.RobotLib.CRobotMem;
 import jp.vstone.RobotLib.CRobotPose;
+import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
@@ -42,11 +45,12 @@ public class SuggestNextHabit {
 			final ArrayList<User> fnResults = findNameState.getResults();
 			final String nickName = fnResults.get(fnResults.size() - 1).getNickName();
 			try {
+				// 今週の生活習慣を集計する
 				final GetHabitsRes res = JSONMapper.mapper.readValue(MyHttpCon.getHabits(nickName, true, 1, 7),
 						GetHabitsRes.class);
-				// 改善目標を得る
 				int[] habit = new int[5];
 				for (int i = 0, length = res.getResults().size(); i < length; i++) {
+					// TODO Enum化
 					habit[0] += res.getResults().get(i).isExercise() ? 1 : 0;
 					habit[1] += res.getResults().get(i).isDrinking() ? 1 : 0;
 					habit[2] += res.getResults().get(i).isEatBreakfast() ? 1 : 0;
@@ -55,6 +59,7 @@ public class SuggestNextHabit {
 				}
 				// 小数点以下が切り捨てられるから、とりあえずまとめてから割り算する
 				habit[4] /=  res.getResults().size();
+				// 改善目標を得る
 				final GetSuggestedNextHabitRes resNextHabit = JSONMapper.mapper.readValue(MyHttpCon.getSuggestedNextHabit(habit), GetSuggestedNextHabitRes.class);
 				// TODO もっといい名前考えて
 				String name = "";
@@ -76,6 +81,11 @@ public class SuggestNextHabit {
 					break;
 				}
 				int value = resNextHabit.getValue() - habit[resNextHabit.getIndex()];
+
+				if(!sendResult(name, value)) {
+					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+				}
+
 				String action = "増やそう";
 				if(value < 0) {
 					value *= -1;
@@ -90,6 +100,7 @@ public class SuggestNextHabit {
 				TextToSpeech.speech(sentence, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 				sentence = MyStrBuilder.build(124, "次週は", value, unit, action);
 				TextToSpeech.speech(sentence, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
+
 			} catch (IOException e) {
 				// TODO 自動生成された catch ブロック
 				e.printStackTrace();
@@ -98,5 +109,34 @@ public class SuggestNextHabit {
 			}
 
 		}
+	}
+
+	final private static boolean sendResult(String name, int value) {
+		boolean isSuccess = false;
+		try {
+			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
+			// sotaと会話している人の名前を取得
+			ArrayList<User> fnResults = fnState.getResults();
+			String nickName = fnResults.get(fnResults.size() - 1).getNickName();
+			PostSuggestedHabitReq req = new PostSuggestedHabitReq();
+			req.setNickName(nickName);
+			req.setItem(name);
+			req.setValue(value);
+			PostSuggestedHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postSuggestedHaibt(req), PostSuggestedHabitRes.class);
+		    boolean	success = res.isSuccess();
+		 	if(success) {
+		 		CRobotUtil.Log(TAG, "登録成功");
+		 		isSuccess = true;
+		 	}else {
+		 		CRobotUtil.Log(TAG, "登録失敗");
+		 		isSuccess = false;
+		 	}
+		} catch (Exception e) {
+			e.printStackTrace();
+			CRobotUtil.Log(TAG, "失敗");
+			isSuccess = false;
+		}
+
+		return isSuccess;
 	}
 }

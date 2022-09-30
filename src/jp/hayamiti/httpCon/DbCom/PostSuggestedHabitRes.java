@@ -2,7 +2,7 @@ package jp.hayamiti.httpCon.DbCom;
 
 import jp.hayamiti.JSON.JACKSONObject;
 
-final public class PostSuggestHabitRes extends JACKSONObject{
+final public class PostSuggestedHabitRes extends JACKSONObject{
 	private boolean success;
 
 	final public boolean isSuccess() {
