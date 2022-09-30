@@ -18,6 +18,7 @@ import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
+import jp.hayamiti.state.SuggestNextHabitState;
 import jp.hayamiti.state.TextToSpeechState;
 import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
@@ -30,8 +31,8 @@ import jp.vstone.RobotLib.CRobotUtil;
 import jp.vstone.RobotLib.CSotaMotion;
 import jp.vstone.sotatalk.MotionAsSotaWish;
 
-public class TestApp3 {
-	static final String TAG = "TestApp2";
+public class TestApp4 {
+	static final String TAG = "TestApp4";
 	static final String START_SOUND = "sound/mao-damasi-system04.wav";
 
 	public static void main(String[] args) {
@@ -64,6 +65,7 @@ public class TestApp3 {
 					add(new HabitQsState());
 					add(new ConditionQsState());
 					add(new DayQsState());
+					add(new SuggestNextHabitState());
 				}
 			};
 			Store.bind(stateList);
@@ -137,7 +139,7 @@ public class TestApp3 {
 						if (DayQs.dayQs(pose, mem, motion, sotawish, mic)) {
 							if (dayQsState.getIsEnd()) {
 								// 終了すると答えた場合
-								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
+								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.ADVISE);
 							} else {
 								// 日にちを答えた場合
 								Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE,
@@ -190,6 +192,10 @@ public class TestApp3 {
 							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE,
 									SotaState.Mode.LISTEN_BACK_DAY);
 						}
+					} else if (mode == SotaState.Mode.ADVISE) {
+						// 次の週の改善目標を提案する
+						SuggestNextHabit.suggestNextHabit(pose, mem, motion, sotawish, mic);
+						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 					} else if (mode == SotaState.Mode.FIN) {
 						// 聞き取り終了
 						TextToSpeech.speech("質問はこれで終わり。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);

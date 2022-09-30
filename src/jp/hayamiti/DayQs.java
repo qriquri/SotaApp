@@ -31,7 +31,7 @@ final public class DayQs {
 		DayQsState state = (DayQsState)Store.getState(DayQsState.class);
 		Enum<DayQsState.Mode> mode = state.getMode();
 		if(mode == DayQsState.Mode.LISTEN_ANS) {
-			recordARec(mic, sotawish, motion);
+			isFinish = recordARec(mic, sotawish, motion);
 		}else if(mode == DayQsState.Mode.CONFORM_ANS) {
 			int backDay = state.getResult();
 			if(backDay == 0) {
@@ -49,7 +49,7 @@ final public class DayQs {
 		return isFinish;
 	}
 
-	private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
+	private static boolean recordARec(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 			TextToSpeech.speech("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
@@ -60,9 +60,10 @@ final public class DayQs {
 			String ans = res.getResult();
 			String text = res.getText();
 			if(text.contains("おわり") || text.contains("終わり")){
-				// 終了させる
-				Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
-				return;
+				// 終了と答えたことを登録する
+				Store.dispatch(DayQsState.class, DayQsState.Action.SET_IS_END, true);
+				// 質問のループを終わらせるためにtrueを返す
+				return true;
 			}
 			CRobotUtil.Log(TAG, ans);
 			if(ans.equals("error")) {
@@ -72,13 +73,17 @@ final public class DayQs {
 	    		// 追加する
 	        	Store.dispatch(DayQsState.class, DayQsState.Action.SET_RESULT, Integer.parseInt(ans));
 	            Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.CONFORM_ANS);
+	            // これ入れないと二人目のときにtrueを返しちゃう
+				Store.dispatch(DayQsState.class, DayQsState.Action.SET_IS_END, false);
 			}
 		}catch(Exception e) {
 			CRobotUtil.Log(TAG, e.toString());
 			e.printStackTrace();
 			TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
             Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
+
 		}
+		return false;
 	}
 
 	final public static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {

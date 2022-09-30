@@ -17,9 +17,11 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitReq;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostSuggestedHabitReq;
 import jp.hayamiti.utils.MyLog;
 
 final public class MyHttpCon {
@@ -168,6 +170,22 @@ final public class MyHttpCon {
         return response;
     }
 
+    /**
+     * 次の週の改善目標を教えてもらう
+     * @param habit
+     * @return
+     * @throws IOException
+     */
+    final public static String getSuggestedNextHabit(int[] habit) throws IOException{
+    	String response = "{\"success\": false}";
+    	String url = API_HOME + "/getSuggestedNextHabit";
+    	GetSuggestedNextHabitReq req = new GetSuggestedNextHabitReq();
+    	req.setHabit(habit);
+    	String body = JSONMapper.mapper.writeValueAsString(req);
+    	response = sendJSON(body, url);
+    	return response;
+    }
+
     final public static String getUserNames(String nameKana) throws IOException {
     	String response = "{\"success\": false}";
         String encodeName = URLEncoder.encode(nameKana,"UTF-8");
@@ -205,6 +223,21 @@ final public class MyHttpCon {
     	String response = "{\"success\": false}";
     	try {
 	    	String url = DB_HOME + "/postHabit";
+	    	String body = JSONMapper.mapper.writeValueAsString(req);
+    		response = sendJSON(body, url);
+    	}catch(Exception e) {
+    		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
+
+    	}finally {
+
+    	}
+    	return response;
+    }
+
+    final public static String postSuggestedHaibt(PostSuggestedHabitReq req) throws IOException{
+    	String response = "{\"success\": false}";
+    	try {
+	    	String url = DB_HOME + "/postSuggestedHabit";
 	    	String body = JSONMapper.mapper.writeValueAsString(req);
     		response = sendJSON(body, url);
     	}catch(Exception e) {
