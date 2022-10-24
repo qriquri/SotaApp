@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.GenerateSentenceRes;
 import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitReq;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
@@ -29,6 +30,7 @@ final public class MyHttpCon {
 	private static final String EOL = "\r\n"; // <= サーバーのosの改行コードに合わせる
     private static final String LOG_TAG = "MyHttpCon";
     public static final String API_HOME = "http://192.168.1.47:80"; // これ変わるから注意
+    public static final String GPT2_API_HOME = "http://192.168.1.47:70"; // これ変わるから注意
     public static final String DB_HOME = "http://192.168.1.47:8000";// これ変わるから注意
 
 
@@ -232,6 +234,20 @@ final public class MyHttpCon {
 
     	}
     	return response;
+    }
+
+    /**
+     * 文章生成
+     * @param startSentencel
+     * @return
+     * @throws IOException
+     */
+    final public static GenerateSentenceRes generateSentence(String startSentence) throws IOException {
+        String response = "{\"success\": false}";
+        String url = GPT2_API_HOME + "/generateSentence?&text=" + URLEncoder.encode(startSentence, "UTF-8");
+        response = createGetReq(url);
+        GenerateSentenceRes jRes = JSONMapper.mapper.readValue(response, GenerateSentenceRes.class);
+        return jRes;
     }
 
     final public static String postSuggestedHaibt(PostSuggestedHabitReq req) throws IOException{
