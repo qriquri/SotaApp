@@ -9,10 +9,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.BasicRes;
+import jp.hayamiti.httpCon.ApiCom.GenerateSentenceRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.FindNameState;
+import jp.hayamiti.state.GenerateSentenceState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
@@ -66,6 +68,7 @@ public class TestApp4 {
 					add(new ConditionQsState());
 					add(new DayQsState());
 					add(new SuggestNextHabitState());
+					add(new GenerateSentenceState());
 				}
 			};
 			Store.bind(stateList);
@@ -197,6 +200,11 @@ public class TestApp4 {
 						SuggestNextHabit.suggestNextHabit(pose, mem, motion, sotawish, mic);
 						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 					} else if (mode == SotaState.Mode.FIN) {
+					    if(GenerateSentence.generateSentence("早寝早起きのメリットは")) {
+		                    final GenerateSentenceRes res = ((GenerateSentenceState)Store.getState(GenerateSentenceState.class)).getResult();
+		                    String result = res.getResult().get((int)(res.getResult().size() * Math.random()));
+		                    TextToSpeech.speech(result, sotawish, result);
+		                }
 						// 聞き取り終了
 						TextToSpeech.speech("質問はこれで終わり。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 						String nameList = fnResults.get(0).getFurigana();
