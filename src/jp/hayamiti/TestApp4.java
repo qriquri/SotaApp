@@ -11,18 +11,15 @@ import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.ApiCom.GenerateSentenceRes;
 import jp.hayamiti.httpCon.DbCom.User;
-import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.DayQsState;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.GenerateSentenceState;
 import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
-import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
-import jp.hayamiti.state.SuggestNextHabitState;
+import jp.hayamiti.state.StoreTest4;
 import jp.hayamiti.state.TextToSpeechState;
-import jp.hayamiti.state.YesOrNoState;
 import jp.hayamiti.utils.MyLog;
 import jp.hayamiti.utils.MyStrBuilder;
 import jp.vstone.RobotLib.CPlayWave;
@@ -57,21 +54,7 @@ public class TestApp4 {
 		CRecordMic mic = new CRecordMic();
 		try {
 			//Store 初期化 stateを束ねる
-			ArrayList<State> stateList = new ArrayList<State>() {
-				{
-					add(new SotaState());
-					add(new SpRecState());
-					add(new TextToSpeechState());
-					add(new FindNameState());
-					add(new YesOrNoState());
-					add(new HabitQsState());
-					add(new ConditionQsState());
-					add(new DayQsState());
-					add(new SuggestNextHabitState());
-					add(new GenerateSentenceState());
-				}
-			};
-			Store.bind(stateList);
+			StoreTest4.setup();
 			// <stateの取得>
 			SotaState sotaState = (SotaState) Store.getState(SotaState.class);
 			SpRecState spRecState = (SpRecState) Store.getState(SpRecState.class);
