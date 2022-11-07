@@ -149,9 +149,9 @@ final public class ConditionQs {
 				// モード更新
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 				// <結果を送信>
-				if(!sendResult( backDay)) {
-					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
-				}
+//				if(!sendResult( backDay)) {
+//					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+//				}
 				// </結果を送信>
 				isConformed = true;
 			} else {

@@ -175,6 +175,8 @@ public class TestApp4 {
 						// 体調を聞き出す
 						int backDay = dayQsState.getResult();
 						if (ConditionQs.conditionQs(pose, mem, motion, sotawish, mic, backDay)) {
+						    HabitQs.sendResult(backDay);
+						    ConditionQs.sendResult(backDay);
 							Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE,
 									SotaState.Mode.LISTEN_BACK_DAY);
 						}

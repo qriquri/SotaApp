@@ -12,6 +12,7 @@ import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.FindNameState;
 import jp.hayamiti.state.HabitQsState;
+import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
 import jp.hayamiti.state.Store;
@@ -192,6 +193,7 @@ final public class HabitQs {
         final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
         if (state.getQuestionI() == HabitQsState.QuestionI.IS_EXERCISE) {
             backQsIndex = 0;
+            Store.dispatch(SotaState.class,SotaState.Action.UPDATE_MODE,SotaState.Mode.LISTEN_BACK_DAY);
         } else {
             if (state.getQuestionI() == HabitQsState.QuestionI.SLEEP) {
                 if (!state.getResult().isEatSnack()) {
@@ -224,9 +226,9 @@ final public class HabitQs {
             // 終了
             qsIndex = HabitQsState.QuestionI.values()[0].ordinal();
             // <結果を送信>
-            if (!sendResult(backDay)) {
-                TextToSpeech.speech("登録に失敗しました。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
-            }
+//            if (!sendResult(backDay)) {
+//                TextToSpeech.speech("登録に失敗しました。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+//            }
             // </結果を送信>
             isConformed = true;
         }
