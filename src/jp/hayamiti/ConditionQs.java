@@ -10,6 +10,7 @@ import jp.hayamiti.httpCon.DbCom.PostConditionRes;
 import jp.hayamiti.httpCon.DbCom.User;
 import jp.hayamiti.state.ConditionQsState;
 import jp.hayamiti.state.FindNameState;
+import jp.hayamiti.state.HabitQsState;
 import jp.hayamiti.state.SotaState;
 import jp.hayamiti.state.SpRecState;
 import jp.hayamiti.state.State;
@@ -121,7 +122,13 @@ final public class ConditionQs {
 			if (ans.equals("error")) {
 				TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
-			}else {
+			}else if(ans.equals("miss")) {
+			    // 生活習慣の最後の質問に戻る
+			    Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
+			    Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.LISTEN_HABIT);
+			    Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_QUESTION_IDX, HabitQsState.QuestionI.values()[HabitQsState.QuestionI.GETUP.ordinal()]);
+			}
+			else {
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.SET_LISTEN_RESULT, res);
 				// 答えがあってるか確認するモードへ
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.CONFORM_ANS);
@@ -142,9 +149,9 @@ final public class ConditionQs {
 				// モード更新
 				Store.dispatch(ConditionQsState.class, ConditionQsState.Action.UPDATE_MODE, ConditionQsState.Mode.LISTEN_ANS);
 				// <結果を送信>
-				if(!sendResult(result, backDay)) {
-					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
-				}
+//				if(!sendResult( backDay)) {
+//					TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+//				}
 				// </結果を送信>
 				isConformed = true;
 			} else {
@@ -162,7 +169,7 @@ final public class ConditionQs {
 		return isConformed;
 	}
 
-	final private static boolean sendResult(ConditionQsRes result, int backDay) {
+	final public static boolean sendResult(int backDay) {
 		boolean isSuccess = false;
 		try {
 			FindNameState fnState = (FindNameState)Store.getState(FindNameState.class);
@@ -171,8 +178,9 @@ final public class ConditionQs {
 			String nickName = fnResults.get(fnResults.size() - 1).getNickName();
 			PostConditionReq req = new PostConditionReq();
 			req.setNickName(nickName);
-			req.setSentence(result.getText());
-			req.setCondition(result.getResult());
+			ConditionQsState state = (ConditionQsState)Store.getState(ConditionQsState.class);
+			req.setSentence(state.getResult().getText());
+			req.setCondition(state.getResult().getResult());
 			req.setBackDay(backDay);
 			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
 		    boolean	success = res.isSuccess();

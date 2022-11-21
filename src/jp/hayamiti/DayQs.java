@@ -35,16 +35,16 @@ final public class DayQs {
 		}else if(mode == DayQsState.Mode.CONFORM_ANS) {
 			int backDay = state.getResult();
 			if(backDay == 0) {
-				TextToSpeech.speech("今日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+				TextToSpeech.speech("今日のデータを登録するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}else if (backDay == 1) {
-				TextToSpeech.speech("昨日であってる？", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+				TextToSpeech.speech("昨日のデータを登録するよ", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			else {
-				TextToSpeech.speech(MyStrBuilder.build(64, backDay,"日前であってる？"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+				TextToSpeech.speech(MyStrBuilder.build(64, backDay,"日前のデータを登録するよ"), sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
 			}
 			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.WAIT_CONFORM);
 		}else if(mode == DayQsState.Mode.WAIT_CONFORM) {
-			isFinish = waitConform(pose, mem, motion, sotawish, mic);
+			isFinish = nextQs(pose, mem, motion, sotawish, mic);
 		}
 		return isFinish;
 	}
@@ -86,27 +86,9 @@ final public class DayQs {
 		return false;
 	}
 
-	final public static boolean waitConform(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
-		boolean isConformed = false;
-		Enum<YesOrNoState.Mode> yesOrNoMode = ((YesOrNoState) Store.getState(YesOrNoState.class)).getMode();
-		if (yesOrNoMode == YesOrNoState.Mode.LISTENED_YES_OR_NO) {
-			boolean isYes = ((YesOrNoState) Store.getState(YesOrNoState.class)).getIsYes();
-			if (isYes) {
-				// モード更新
-				Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
-				isConformed = true;
-			} else {
-				// 聞き直す
-				// モード更新
-				Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
-			}
-		} else if (yesOrNoMode == YesOrNoState.Mode.ERROR) {
-			// 確認しなおす
-			// モード更新
-			Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.CONFORM_ANS);
-		}
-		// yesOrNo処理
-		YesOrNo.yesOrNo(pose, mem, motion, sotawish, mic);
+	final public static boolean nextQs(CRobotPose pose, CRobotMem mem, CSotaMotion motion, MotionAsSotaWish sotawish, CRecordMic mic) {
+		boolean isConformed = true;
+		Store.dispatch(DayQsState.class, DayQsState.Action.UPDATE_MODE, DayQsState.Mode.LISTEN_ANS);
 		return isConformed;
 	}
 
