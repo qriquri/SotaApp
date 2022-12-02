@@ -3,7 +3,6 @@ package jp.hayamiti;
 import java.util.ArrayList;
 import java.util.List;
 
-import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.state.SotaState;
@@ -114,9 +113,8 @@ final public class SpeechRec {
 			mic.waitend();
 			CRobotUtil.Log(TAG, "wait end");
 			// </録音>
-			String result = MyHttpCon.speechRec(TEST_REC_PATH);
-			CRobotUtil.Log(TAG, result);
-			SpRecRes res = JSONMapper.mapper.readValue(result, SpRecRes.class);
+			SpRecRes res = MyHttpCon.speechRec(TEST_REC_PATH);
+            CRobotUtil.Log(TAG, res.toString());
 			MyLog.info(TAG,"get audio:" + res.getResult());
             Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_RESULT, res.getResult());
             Store.dispatch(SpRecState.class, SpRecState.Action.UPDATE_ALTER, res.getAlternative());

@@ -162,8 +162,7 @@ final public class HabitQs {
             TextToSpeech.speech(question, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
             SpeechRec.speechRec(mic, motion);
             // apiサーバーに送信して、解析してもらう
-            String result = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);
-            HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
+            HabitQsRes res = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);;
             CRobotUtil.Log(TAG, JSONMapper.mapper.writeValueAsString(res));
             String ans = res.getResult();
 
@@ -248,7 +247,7 @@ final public class HabitQs {
         state.getResult().setNickName(nickName);
         state.getResult().setBackDay(backDay);
         try {
-            PostHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postHabit(state.getResult()), PostHabitRes.class);
+            PostHabitRes res = MyHttpCon.postHabit(state.getResult());
             boolean success = res.isSuccess();
             if (success) {
                 CRobotUtil.Log(TAG, "登録成功");

@@ -9,7 +9,6 @@ import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.ApiCom.BasicRes;
 import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
 import jp.hayamiti.httpCon.ApiCom.NameRecRes;
-import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.utils.MyLog;
 
 public class ApiResponseTest {
@@ -25,8 +24,7 @@ public class ApiResponseTest {
 		}
 		try {
 			MyLog.info(TAG, "speechRec");
-			String result = MyHttpCon.speechRec(TEST_REC_PATH);
-			JACKSONObject res = JSONMapper.mapper.readValue(result, SpRecRes.class);
+			JACKSONObject res = MyHttpCon.speechRec(TEST_REC_PATH);;
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {
@@ -35,8 +33,7 @@ public class ApiResponseTest {
 		}
 		try {
 			MyLog.info(TAG, "NameRec");
-			String result = MyHttpCon.nameRec(FIND_NAME_REC_PATH);
-			NameRecRes res = JSONMapper.mapper.readValue(result, NameRecRes.class);
+			NameRecRes res = MyHttpCon.nameRec(FIND_NAME_REC_PATH);
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {
@@ -57,8 +54,7 @@ public class ApiResponseTest {
 
 		try {
 			MyLog.info(TAG, "habitQs");
-			String result = MyHttpCon.habitQs(TEST_REC_PATH, "exercise");
-			HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
+			HabitQsRes res = MyHttpCon.habitQs(TEST_REC_PATH, "exercise");
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {

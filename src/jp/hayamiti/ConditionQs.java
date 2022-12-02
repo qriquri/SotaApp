@@ -2,7 +2,6 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
@@ -113,9 +112,8 @@ final public class ConditionQs {
 			TextToSpeech.speech(relativeToday + "の体調はどんな感じ?", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			SpeechRec.speechRec(mic, motion);
-			String result = MyHttpCon.conditionQs(((SpRecState) Store.getState(SpRecState.class)).getResult());
-			CRobotUtil.Log(TAG, result);
-			ConditionQsRes res = JSONMapper.mapper.readValue(result, ConditionQsRes.class);
+			ConditionQsRes res = MyHttpCon.conditionQs(((SpRecState) Store.getState(SpRecState.class)).getResult());
+            CRobotUtil.Log(TAG, res.toString());
 			String ans = res.getResult();
 			CRobotUtil.Log(TAG, ans);
 
@@ -182,7 +180,7 @@ final public class ConditionQs {
 			req.setSentence(state.getResult().getText());
 			req.setCondition(state.getResult().getResult());
 			req.setBackDay(backDay);
-			PostConditionRes res = JSONMapper.mapper.readValue(MyHttpCon.postCondition(req), PostConditionRes.class);
+			PostConditionRes res = MyHttpCon.postCondition(req);
 		    boolean	success = res.isSuccess();
 		 	if(success) {
 		 		CRobotUtil.Log(TAG, "登録成功");

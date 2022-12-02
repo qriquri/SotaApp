@@ -17,12 +17,24 @@ import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 
 import jp.hayamiti.JSON.JSONMapper;
+import jp.hayamiti.httpCon.ApiCom.ConditionQsRes;
+import jp.hayamiti.httpCon.ApiCom.DayQsRes;
 import jp.hayamiti.httpCon.ApiCom.GenerateSentenceRes;
 import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitReq;
+import jp.hayamiti.httpCon.ApiCom.GetSuggestedNextHabitRes;
+import jp.hayamiti.httpCon.ApiCom.HabitQsRes;
+import jp.hayamiti.httpCon.ApiCom.NameRecRes;
+import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
+import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
+import jp.hayamiti.httpCon.DbCom.GetHabitsRes;
+import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
+import jp.hayamiti.httpCon.DbCom.PostConditionRes;
 import jp.hayamiti.httpCon.DbCom.PostHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostHabitRes;
 import jp.hayamiti.httpCon.DbCom.PostSuggestedHabitReq;
+import jp.hayamiti.httpCon.DbCom.PostSuggestedHabitRes;
 import jp.hayamiti.utils.MyLog;
 
 final public class MyHttpCon {
@@ -81,10 +93,10 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String speechRec(String filename) throws IOException {
-    	String response = "{\"success\": false}";
-        String url = API_HOME + "/spRec?sendTime=" + System.currentTimeMillis();
-        response = uploadFile(filename, url);
+    final public static SpRecRes speechRec(String filename) throws IOException {
+    	String url = API_HOME + "/spRec?sendTime=" + System.currentTimeMillis();
+        SpRecRes response = JSONMapper.mapper.readValue(uploadFile(filename, url), SpRecRes.class);
+
         return response;
     }
 
@@ -108,10 +120,10 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String nameRec(String text) throws IOException {
-    	String response = "{\"success\": false}";
-        String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
-        response = createGetReq(url);
+    final public static NameRecRes nameRec(String text) throws IOException {
+    	String url = API_HOME + "/nameRec?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        NameRecRes response = JSONMapper.mapper.readValue(createGetReq(url), NameRecRes.class);
+
         return response;
     }
 
@@ -122,10 +134,9 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String dayRec(String text) throws IOException {
-    	String response = "{\"success\": false}";
-        String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis() + "&text=" +  URLEncoder.encode(text, "UTF-8");
-        response = createGetReq(url);
+    final public static DayQsRes dayRec(String text) throws IOException {
+    	String url = API_HOME + "/dayRec?sendTime=" + System.currentTimeMillis() + "&text=" +  URLEncoder.encode(text, "UTF-8");
+        DayQsRes response = JSONMapper.mapper.readValue(createGetReq(url), DayQsRes.class);
         return response;
     }
 
@@ -135,13 +146,13 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String yesOrNo(List<String> alternative) throws IOException {
-    	String response = "{\"success\": false}";
+    final public static YesOrNoRes yesOrNo(List<String> alternative) throws IOException {
     	YesOrNoReq req = new YesOrNoReq();
     	req.setAlternative(alternative);
     	String body = JSONMapper.mapper.writeValueAsString(req);
         String url = API_HOME + "/yesOrNo?sendTime=" + System.currentTimeMillis();
-        response = sendJSON(body,url);
+        YesOrNoRes response = JSONMapper.mapper.readValue(sendJSON(body,url), YesOrNoRes.class);
+
         return response;
     }
 
@@ -152,10 +163,9 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String habitQs(String text, String type) throws IOException {
-    	String response = "{\"success\": false}";
-        String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type + "&text=" + URLEncoder.encode(text, "UTF-8");
-        response = createGetReq(url);
+    final public static HabitQsRes habitQs(String text, String type) throws IOException {
+    	String url = API_HOME + "/habitQs?sendTime=" + System.currentTimeMillis() + "&type=" + type + "&text=" + URLEncoder.encode(text, "UTF-8");
+        HabitQsRes response = JSONMapper.mapper.readValue(createGetReq(url), HabitQsRes.class);
         return response;
     }
 
@@ -165,10 +175,10 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String conditionQs(String text) throws IOException {
-    	String response = "{\"success\": false}";
-        String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
-        response = createGetReq(url);
+    final public static ConditionQsRes conditionQs(String text) throws IOException {
+    	String url = API_HOME + "/conditionQs?sendTime=" + System.currentTimeMillis() + "&text=" + URLEncoder.encode(text, "UTF-8");
+        ConditionQsRes response = JSONMapper.mapper.readValue(createGetReq(url), ConditionQsRes.class);
+
         return response;
     }
 
@@ -178,21 +188,20 @@ final public class MyHttpCon {
      * @return
      * @throws IOException
      */
-    final public static String getSuggestedNextHabit(int[] habit) throws IOException{
-    	String response = "{\"success\": false}";
+    final public static GetSuggestedNextHabitRes getSuggestedNextHabit(int[] habit) throws IOException{
     	String url = API_HOME + "/getSuggestedNextHabit";
     	GetSuggestedNextHabitReq req = new GetSuggestedNextHabitReq();
     	req.setHabit(habit);
     	String body = JSONMapper.mapper.writeValueAsString(req);
-    	response = sendJSON(body, url);
+    	GetSuggestedNextHabitRes response = JSONMapper.mapper.readValue(sendJSON(body, url), GetSuggestedNextHabitRes.class);
     	return response;
     }
 
-    final public static String getUserNames(String nameKana) throws IOException {
-    	String response = "{\"success\": false}";
-        String encodeName = URLEncoder.encode(nameKana,"UTF-8");
+    final public static GetUserNamesRes getUserNames(String nameKana) throws IOException {
+    	String encodeName = URLEncoder.encode(nameKana,"UTF-8");
         String url = DB_HOME + "/getUserNames?nameKana="+ encodeName;
-        response = createGetReq(url);
+        GetUserNamesRes response = JSONMapper.mapper.readValue(createGetReq(url), GetUserNamesRes.class);
+
         return response;
     }
 
@@ -218,21 +227,29 @@ final public class MyHttpCon {
         String encodeName = URLEncoder.encode(nickName,"UTF-8");
         String url = DB_HOME + "/getHabits?nickName="+encodeName+"&isSota="+isSota+"&start="+start+"&end="+end;
         response = createGetReq(url);
-         return response;
+        return response;
      }
 
-    final public static String postHabit(PostHabitReq req) throws IOException{
-    	String response = "{\"success\": false}";
-    	try {
-	    	String url = DB_HOME + "/postHabit";
-	    	String body = JSONMapper.mapper.writeValueAsString(req);
-    		response = sendJSON(body, url);
-    	}catch(Exception e) {
-    		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
+    /**
+     * 例えば3日前から7日前までなら、start=3, end = 7にする
+     * @param nickName
+     * @param isSota
+     * @param start 何日前から
+     * @param end   何日前まで
+     * @return
+     * @throws IOException
+     */
+    final public static GetHabitsRes getOneWeekHabits(String nickName, boolean isSota, int backWeek) throws IOException {
+        String encodeName = URLEncoder.encode(nickName,"UTF-8");
+        String url = DB_HOME + "/getOneWeekHabits?nickName="+encodeName+"&isSota="+isSota+"&backWeek="+ backWeek;
+        final GetHabitsRes response = JSONMapper.mapper.readValue(createGetReq(url),GetHabitsRes.class);
+        return response;
+     }
 
-    	}finally {
-
-    	}
+    final public static PostHabitRes postHabit(PostHabitReq req) throws IOException{
+		String url = DB_HOME + "/postHabit";
+    	String body = JSONMapper.mapper.writeValueAsString(req);
+		PostHabitRes response = JSONMapper.mapper.readValue(sendJSON(body, url), PostHabitRes.class);
     	return response;
     }
 
@@ -243,39 +260,24 @@ final public class MyHttpCon {
      * @throws IOException
      */
     final public static GenerateSentenceRes generateSentence(String startSentence) throws IOException {
-        String response = "{\"success\": false}";
         String url = GPT2_API_HOME + "/generateSentence?&text=" + URLEncoder.encode(startSentence, "UTF-8");
-        response = createGetReq(url);
-        GenerateSentenceRes jRes = JSONMapper.mapper.readValue(response, GenerateSentenceRes.class);
+        GenerateSentenceRes jRes = JSONMapper.mapper.readValue(createGetReq(url), GenerateSentenceRes.class);
         return jRes;
     }
 
-    final public static String postSuggestedHaibt(PostSuggestedHabitReq req) throws IOException{
-    	String response = "{\"success\": false}";
-    	try {
+    final public static PostSuggestedHabitRes postSuggestedHaibt(PostSuggestedHabitReq req) throws IOException{
 	    	String url = DB_HOME + "/postSuggestedHabit";
 	    	String body = JSONMapper.mapper.writeValueAsString(req);
-    		response = sendJSON(body, url);
-    	}catch(Exception e) {
-    		MyLog.error(LOG_TAG, "postHabit err " + e.toString());
 
-    	}finally {
+            PostSuggestedHabitRes response = JSONMapper.mapper.readValue(sendJSON(body, url), PostSuggestedHabitRes.class);
 
-    	}
     	return response;
     }
 
-    final public static String postCondition(PostConditionReq req) throws IOException{
-    	String response = "{\"success\": false}";
-    	try {
-    		String url = DB_HOME + "/postCondition";
-    		String body = JSONMapper.mapper.writeValueAsString(req);
-    		response = sendJSON(body, url);
-    	}catch(Exception e) {
-    		MyLog.error(LOG_TAG, "postCondition err " + e.toString());
-    	}finally {
-
-    	}
+    final public static PostConditionRes postCondition(PostConditionReq req) throws IOException{
+		String url = DB_HOME + "/postCondition";
+		String body = JSONMapper.mapper.writeValueAsString(req);
+		PostConditionRes response = JSONMapper.mapper.readValue(sendJSON(body, url), PostConditionRes.class);
     	return response;
     }
 

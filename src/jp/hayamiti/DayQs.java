@@ -54,9 +54,8 @@ final public class DayQs {
 			TextToSpeech.speech("何日前のデータを登録する？ また、終了する場合は、終わりと答えてね。",sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
 			SpeechRec.speechRec(mic, motion);
-			String result = MyHttpCon.dayRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
-			CRobotUtil.Log(TAG, result);
-			DayQsRes res = JSONMapper.mapper.readValue(result, DayQsRes.class);
+			DayQsRes res = MyHttpCon.dayRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
+            CRobotUtil.Log(TAG, res.toString());
 			String ans = res.getResult();
 			String text = res.getText();
 			if(text.contains("おわり") || text.contains("終わり")){
