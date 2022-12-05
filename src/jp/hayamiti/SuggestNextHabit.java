@@ -134,7 +134,7 @@ public class SuggestNextHabit {
                 }
                 int value = resNextHabit.getValue() - habit[resNextHabit.getIndex()];
 
-                if (!sendResult(name, value)) {
+                if (!sendResult(""+resNextHabit.getIndex(), value)) {
                     TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
                 }
 
