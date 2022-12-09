@@ -28,6 +28,7 @@ import jp.hayamiti.httpCon.ApiCom.SpRecRes;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoReq;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
 import jp.hayamiti.httpCon.DbCom.GetHabitsRes;
+import jp.hayamiti.httpCon.DbCom.GetSuggestedHabitRes;
 import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
 import jp.hayamiti.httpCon.DbCom.PostConditionReq;
 import jp.hayamiti.httpCon.DbCom.PostConditionRes;
@@ -243,6 +244,13 @@ final public class MyHttpCon {
         String encodeName = URLEncoder.encode(nickName,"UTF-8");
         String url = DB_HOME + "/getOneWeekHabits?nickName="+encodeName+"&isSota="+isSota+"&backWeek="+ backWeek;
         final GetHabitsRes response = JSONMapper.mapper.readValue(createGetReq(url),GetHabitsRes.class);
+        return response;
+     }
+
+    final public static GetSuggestedHabitRes getSuggestedHabit(String nickName, int backWeek) throws IOException {
+        String encodeName = URLEncoder.encode(nickName,"UTF-8");
+        String url = DB_HOME + "/getSuggestedHabit?nickName="+encodeName+"&backWeek="+ backWeek;
+        final GetSuggestedHabitRes response = JSONMapper.mapper.readValue(createGetReq(url),GetSuggestedHabitRes.class);
         return response;
      }
 

@@ -50,13 +50,14 @@ public class SuggestNextHabit {
                 }
             };
             Store.bind(stateList);
-         // 音声合成手法を設定
+            // 音声合成手法を設定
             Store.dispatch(TextToSpeechState.class, TextToSpeechState.Action.SET_METHOD,
                     TextToSpeechState.Method.SOTA_CLOUD);
             final User testUser = new User();
             testUser.setNickName("フー");
             Store.dispatch(FindNameState.class, FindNameState.Action.ADD_NAME, testUser);
-            Store.dispatch(SuggestNextHabitState.class, SuggestNextHabitState.Action.UPDATE_MODE, SuggestNextHabitState.Mode.SUGGEST);
+            Store.dispatch(SuggestNextHabitState.class, SuggestNextHabitState.Action.UPDATE_MODE,
+                    SuggestNextHabitState.Mode.SUGGEST);
             final GetHabitsRes res = MyHttpCon.getOneWeekHabits("フー", true, 1);
             MyLog.info(TAG, res.getResults().toString());
             MyLog.info(TAG, MyStrBuilder.build(32, res.getResults().size(), "個取得"));
@@ -100,6 +101,10 @@ public class SuggestNextHabit {
                     TextToSpeech.speech("生活習慣が集まったら改善目標を提案するね。", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
                     return;
                 }
+                if (MyHttpCon.getSuggestedHabit(nickName, 1).getResults().size() != 0) {
+                    CRobotUtil.Log(TAG, "今日は改善目標言わない");
+                    return;
+                }
                 int[] habit = new int[5];
                 for (int i = 1, length = res.getResults().size(); i < length; i++) {
                     // TODO Enum化
@@ -110,7 +115,7 @@ public class SuggestNextHabit {
                     habit[4] += res.getResults().get(i).getGetUp() - (res.getResults().get(i).getSleep() - 24);
                 }
                 // 小数点以下が切り捨てられるから、とりあえずまとめてから割り算する
-                habit[4] /= res.getResults().size()-1;
+                habit[4] /= res.getResults().size() - 1;
                 // 改善目標を得る
                 final GetSuggestedNextHabitRes resNextHabit = MyHttpCon.getSuggestedNextHabit(habit);
                 // TODO もっといい名前考えて
@@ -134,8 +139,9 @@ public class SuggestNextHabit {
                 }
                 int value = resNextHabit.getValue() - habit[resNextHabit.getIndex()];
 
-                if (!sendResult(""+resNextHabit.getIndex(), value)) {
+                if (!sendResult("" + resNextHabit.getIndex(), value)) {
                     TextToSpeech.speech("送信に失敗したよ。", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
+                    return;
                 }
 
                 String action = "増やそう";
@@ -148,10 +154,10 @@ public class SuggestNextHabit {
                     unit = "時間";
                 }
                 // 改善目標を言う
-                String sentence = MyStrBuilder.build(124, "今週の", name, "は", habit[resNextHabit.getIndex()], unit,
+                String sentence = MyStrBuilder.build(124, "先週の", name, "は", habit[resNextHabit.getIndex()], unit,
                         "だったよ。");
                 TextToSpeech.speech(sentence, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
-                sentence = MyStrBuilder.build(124, "次週は", value, unit, action);
+                sentence = MyStrBuilder.build(124, "今週は", value, unit, action);
                 TextToSpeech.speech(sentence, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
 
             } catch (IOException e) {
