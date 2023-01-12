@@ -185,7 +185,7 @@ public class TestApp4 {
 						SuggestNextHabit.suggestNextHabit(pose, mem, motion, sotawish, mic);
 						Store.dispatch(SotaState.class, SotaState.Action.UPDATE_MODE, SotaState.Mode.FIN);
 					} else if (mode == SotaState.Mode.FIN) {
-					    if(GenerateSentence.generateSentence("早寝早起きのメリットは")) {
+					    if(GenerateSentence.generateSentence("運動のメリットは")) {
 		                    final GenerateSentenceRes res = ((GenerateSentenceState)Store.getState(GenerateSentenceState.class)).getResult();
 		                    String result = res.getResult().get((int)(res.getResult().size() * Math.random()));
 		                    TextToSpeech.speech(result, sotawish, result);

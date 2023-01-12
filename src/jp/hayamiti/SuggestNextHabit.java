@@ -96,7 +96,7 @@ public class SuggestNextHabit {
             final String nickName = fnResults.get(fnResults.size() - 1).getNickName();
             try {
                 // 先週の生活習慣を集計する
-                final GetHabitsRes res = MyHttpCon.getOneWeekHabits(nickName, true, 1);
+                final GetHabitsRes res = MyHttpCon.getOneWeekHabits(nickName, true, 2);
                 if (res.getResults().size() < 8) {
                     TextToSpeech.speech("生活習慣が集まったら改善目標を提案するね。", sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
                     return;

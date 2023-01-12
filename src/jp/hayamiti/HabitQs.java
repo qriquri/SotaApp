@@ -146,13 +146,16 @@ final public class HabitQs {
                     break;
                 case SLEEP:
                     type = "sleep";
+//                    question = MyStrBuilder.build(64, relativeYesterday,
+//                            "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。");
                     question = MyStrBuilder.build(64, relativeYesterday,
-                            "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。");
+                            "何時に寝た?");
                     action = HabitQsState.Action.SET_SLEEP_LISTEN_RESULT;
                     break;
                 case GETUP:
                     type = "getUp";
-                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?答え方はさっきと同じでお願い。");
+//                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?答え方はさっきと同じでお願い。");
+                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?");
                     action = HabitQsState.Action.SET_GETUP_LISTEN_RESULT;
                     break;
             }
