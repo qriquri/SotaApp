@@ -25,6 +25,10 @@ final public class Store {
     	}
     }
 
+	final public static void reset() {
+	    stateMap = new HashMap<>();
+	}
+
 	/**
 	 * 指定されたステートを指定されたアクションに応じて処理する
 	 * @param <T>

@@ -107,13 +107,14 @@ final public class HabitQs {
         return isFinish;
     }
 
+
     final private static void recordARec(CRecordMic mic, MotionAsSotaWish sotawish,
             int backDay, CSotaMotion motion) {
         String type = "";
         HabitQsState.Action action = null;
         String question = "";
-        final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
 
+        final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
         try {
             String relativeYesterday = backDay == 0 ? "昨日" : MyStrBuilder.build(12, (backDay + 1), "日前");
             String relativeToday = backDay == 0 ? "今日" : MyStrBuilder.build(12, backDay, "日前");
@@ -173,9 +174,10 @@ final public class HabitQs {
                 TextToSpeech.speech("エラーが起きたからもう一度聞くね", sotawish, MotionAsSotaWish.MOTION_TYPE_LOW);
                 Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
             }else if(ans.equals("miss")) {
+                fixQs();
+            }else if(ans.equals("prev")){
                 backQs();
-            }
-            else {
+            }else {
                 Store.dispatch(HabitQsState.class, action, res);
                 // 答えがあってるか確認するモードへ
                 Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
@@ -189,8 +191,7 @@ final public class HabitQs {
         }
     }
 
-    final private static void backQs() {
-        Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
+    final private static int calcBackIndex() {
         int backQsIndex = 1;
         final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
         if (state.getQuestionI() == HabitQsState.QuestionI.IS_EXERCISE) {
@@ -203,8 +204,95 @@ final public class HabitQs {
                 }
             }
         }
+        return backQsIndex;
+    }
+
+    final private static boolean isAlreadyListened() {
+        boolean result = false;
+        final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
         final Enum<HabitQsState.QuestionI> questionI = HabitQsState.QuestionI.values()[state.getQuestionI().ordinal()
-                - backQsIndex];
+                                                                                       - calcBackIndex()];
+        switch ((HabitQsState.QuestionI) questionI) {
+            case IS_EXERCISE:
+                result = state.getResult().getExerciseT() != null;
+                break;
+            case IS_DRINKING:
+                result = state.getResult().getDrinkingT() != null;
+                break;
+            case EAT_BREAKFAST:
+                result = state.getResult().getEatBreakfastT() != null;
+                break;
+            case EAT_SNACK:
+                result = state.getResult().getEatSnackT() != null;
+                break;
+            case SNACK_NAME:
+            case SLEEP:
+            case GETUP:
+                break;
+        }
+        return result;
+    }
+
+    final private static void fixQs() {
+
+        CRobotUtil.Log(TAG, "check Listened");
+        if(!isAlreadyListened()) {
+            CRobotUtil.Log(TAG, "Not Listened");
+            return;
+        }
+        CRobotUtil.Log(TAG, "Listened");
+        final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
+        final Enum<HabitQsState.QuestionI> questionI = HabitQsState.QuestionI.values()[state.getQuestionI().ordinal()
+                - calcBackIndex()];
+        Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_QUESTION_IDX, questionI);
+        Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
+        // 実行
+        HabitQsRes res = new HabitQsRes();
+        res.setResult("yes");
+        res.setSendTime(0);
+        switch ((HabitQsState.QuestionI) state.getQuestionI()) {
+            case IS_EXERCISE:
+                res.setText(state.getResult().getExerciseT());
+                res.setResult(state.getResult().isExercise() ? "no" : "yes");
+
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_EXERCISE_LISTEN_RESULT, res);
+                break;
+            case IS_DRINKING:
+                res.setText(state.getResult().getDrinkingT());
+                res.setResult(state.getResult().isDrinking() ? "no" : "yes");
+
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_DRINGKING_LISTEN_RESULT, res);
+                break;
+            case EAT_BREAKFAST:
+                res.setText(state.getResult().getEatBreakfastT());
+                res.setResult(state.getResult().isEatBreakfast() ? "no" : "yes");
+
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_EATBREAKFAST_LISTEN_RESULT, res);
+                break;
+            case EAT_SNACK:
+                res.setText(state.getResult().getEatSnackT());
+                res.setResult(state.getResult().isEatSnack() ? "no" : "yes");
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_EATSNACK_LISTEN_RESULT, res);
+
+                Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.CONFORM_ANS);
+                break;
+            case SNACK_NAME:
+            case SLEEP:
+            case GETUP:
+                break;
+        }
+
+
+    }
+
+    final private static void backQs() {
+        Store.dispatch(HabitQsState.class, HabitQsState.Action.UPDATE_MODE, HabitQsState.Mode.LISTEN_ANS);
+        final HabitQsState state = (HabitQsState) Store.getState(HabitQsState.class);
+        final Enum<HabitQsState.QuestionI> questionI = HabitQsState.QuestionI.values()[state.getQuestionI().ordinal()
+                - calcBackIndex()];
         Store.dispatch(HabitQsState.class, HabitQsState.Action.SET_QUESTION_IDX, questionI);
     }
 
