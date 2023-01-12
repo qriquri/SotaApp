@@ -1,6 +1,5 @@
 package jp.hayamiti;
 
-import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.YesOrNoRes;
 import jp.hayamiti.state.SpRecState;
@@ -46,9 +45,8 @@ final public class YesOrNo {
 	final private static void recordARecog(CRecordMic mic, MotionAsSotaWish sotawish, CSotaMotion motion) {
 		try {
 			SpeechRec.speechRec(mic, motion);
-			String result = MyHttpCon.yesOrNo(((SpRecState) Store.getState(SpRecState.class)).getAlternative());
-			CRobotUtil.Log(TAG, result);
-			YesOrNoRes res = JSONMapper.mapper.readValue(result, YesOrNoRes.class);
+			YesOrNoRes res = MyHttpCon.yesOrNo(((SpRecState) Store.getState(SpRecState.class)).getAlternative());
+            CRobotUtil.Log(TAG, res.toString());
 			String isYes =res.getResult();
 			if(isYes.equals("yes")) {
         		Store.dispatch(YesOrNoState.class, YesOrNoState.Action.SET_ISYES, true);

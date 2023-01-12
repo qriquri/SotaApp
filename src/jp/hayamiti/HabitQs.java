@@ -146,13 +146,16 @@ final public class HabitQs {
                     break;
                 case SLEEP:
                     type = "sleep";
+//                    question = MyStrBuilder.build(64, relativeYesterday,
+//                            "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。");
                     question = MyStrBuilder.build(64, relativeYesterday,
-                            "何時に寝た？例えば午後8時に寝たなら20時に寝た、夜の1時に寝たなら25時に寝たと答えてね。");
+                            "何時に寝た?");
                     action = HabitQsState.Action.SET_SLEEP_LISTEN_RESULT;
                     break;
                 case GETUP:
                     type = "getUp";
-                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?答え方はさっきと同じでお願い。");
+//                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?答え方はさっきと同じでお願い。");
+                    question = MyStrBuilder.build(64, relativeToday, "何時に起きた?");
                     action = HabitQsState.Action.SET_GETUP_LISTEN_RESULT;
                     break;
             }
@@ -162,8 +165,7 @@ final public class HabitQs {
             TextToSpeech.speech(question, sotawish, MotionAsSotaWish.MOTION_TYPE_CALL);
             SpeechRec.speechRec(mic, motion);
             // apiサーバーに送信して、解析してもらう
-            String result = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);
-            HabitQsRes res = JSONMapper.mapper.readValue(result, HabitQsRes.class);
+            HabitQsRes res = MyHttpCon.habitQs(((SpRecState) Store.getState(SpRecState.class)).getResult(), type);;
             CRobotUtil.Log(TAG, JSONMapper.mapper.writeValueAsString(res));
             String ans = res.getResult();
 
@@ -248,7 +250,7 @@ final public class HabitQs {
         state.getResult().setNickName(nickName);
         state.getResult().setBackDay(backDay);
         try {
-            PostHabitRes res = JSONMapper.mapper.readValue(MyHttpCon.postHabit(state.getResult()), PostHabitRes.class);
+            PostHabitRes res = MyHttpCon.postHabit(state.getResult());
             boolean success = res.isSuccess();
             if (success) {
                 CRobotUtil.Log(TAG, "登録成功");

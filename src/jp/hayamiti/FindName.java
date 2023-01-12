@@ -2,7 +2,6 @@ package jp.hayamiti;
 
 import java.util.ArrayList;
 
-import jp.hayamiti.JSON.JSONMapper;
 import jp.hayamiti.httpCon.MyHttpCon;
 import jp.hayamiti.httpCon.ApiCom.NameRecRes;
 import jp.hayamiti.httpCon.DbCom.GetUserNamesRes;
@@ -195,17 +194,15 @@ final public class FindName {
 			// </録音>
 			SpeechRec.speechRec(mic, motion);
 			//<名前認識>
-			String result = MyHttpCon.nameRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
-			CRobotUtil.Log(TAG, result);
-			NameRecRes res = JSONMapper.mapper.readValue(result, NameRecRes.class);
+			NameRecRes res = MyHttpCon.nameRec(((SpRecState) Store.getState(SpRecState.class)).getResult());
+            CRobotUtil.Log(TAG, res.toString());
 			String nameKana = res.getResult();
 			CRobotUtil.Log(TAG, nameKana);
 
 			//</名前認識>
 			//<データベースからユーザー情報を取得>
-			result = MyHttpCon.getUserNames(nameKana);
-			CRobotUtil.Log(TAG, result);
-			GetUserNamesRes res2 = JSONMapper.mapper.readValue(result, GetUserNamesRes.class);
+			GetUserNamesRes res2 = MyHttpCon.getUserNames(nameKana);
+			CRobotUtil.Log(TAG, res2.toString());
 			Boolean err = res2.isErr();
 			if(err) {
 				Store.dispatch(FindNameState.class, FindNameState.Action.UPDATE_MODE, FindNameState.Mode.ERROR_NAME);

@@ -27,8 +27,7 @@ public class DbResponseTest  {
 
 		try {
 			MyLog.info(TAG, "getUserNames");
-			String response = MyHttpCon.getUserNames("タケダ");
-			GetUserNamesRes res = JSONMapper.mapper.readValue(response, GetUserNamesRes.class);
+			GetUserNamesRes res = MyHttpCon.getUserNames("タケダ");
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {
@@ -39,8 +38,7 @@ public class DbResponseTest  {
 			MyLog.info(TAG, "postHabit");
 			PostHabitReq req = new PostHabitReq();
 			MyLog.info(TAG, JSONMapper.mapper.writeValueAsString(req));
-			String response = MyHttpCon.postHabit(req);
-			PostHabitRes res = JSONMapper.mapper.readValue(response, PostHabitRes.class);
+			PostHabitRes res = MyHttpCon.postHabit(req);
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {
@@ -54,8 +52,7 @@ public class DbResponseTest  {
 			req.setCondition("元気");
 			req.setSentence("元気");
 			MyLog.info(TAG, JSONMapper.mapper.writeValueAsString(req));
-			String response = MyHttpCon.postCondition(req);
-			PostConditionRes res = JSONMapper.mapper.readValue(response, PostConditionRes.class);
+			PostConditionRes res = MyHttpCon.postCondition(req);
 			String json = JSONMapper.mapper.writeValueAsString(res);
 			MyLog.info(TAG, json);
 		} catch (IOException e) {
