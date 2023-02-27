@@ -62,6 +62,7 @@ final public class HabitQsState extends State {
 			questionI = (QuestionI) val;
 			break;
 		case SET_EXERCISE_LISTEN_RESULT:
+		    MyLog.info(LOG_TAG, "set:" + ((HabitQsRes) val).getResult());
 			result.setExercise(((HabitQsRes) val).getResult().equals("yes"));
 			result.setExerciseT(((HabitQsRes) val).getText());
 			conformText = result.isExercise() ? "運動した" : "運動してない";
